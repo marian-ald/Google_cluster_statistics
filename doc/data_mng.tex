@@ -1,0 +1,98 @@
+\documentclass{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{mathtools}
+
+\usepackage[dvipsnames]{xcolor}
+
+
+
+
+% Margins
+\usepackage[top=2cm, left=2.5cm, right=2.5cm, bottom=3.0cm]{geometry}
+% Colour table cells
+%\usepackage[table]{xcolor}
+
+%\colorlet{myBlue}{blue!10!black!10!}
+%\colorlet{myBlue}{Violet}
+\definecolor{myBlue}{HTML}{0000CC}
+
+% Get larger line spacing in table
+\newcommand{\tablespace}{\\[1.25mm]}
+\newcommand\Tstrut{\rule{0pt}{2.6ex}}         % = `top' strut
+\newcommand\tstrut{\rule{0pt}{2.0ex}}         % = `top' strut
+\newcommand\Bstrut{\rule[-0.9ex]{0pt}{0pt}}   % = `bottom' strut
+
+
+\def\one{\mbox{1\hspace{-4.25pt}\fontsize{12}{14.4}\selectfont\textrm{1}}}
+
+%%%%%%%%%%%%%%%%%
+%     Title     %
+%%%%%%%%%%%%%%%%%
+\title{Data management - Project}
+\author{Marian Aldescu - DS\\ marian.aldescu@etu.univ-grenoble-alpes.fr}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+%%%%%%%%%%%%%%%%%
+%   Problem 1   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\large{For this project, I used my personal computer with the following attributes:}
+\begin{itemize}
+	\item Software: OS:Ubuntu 16.04, python3.7, spark-3.0.1
+	\item Hardware: i5-4210U CPU @ 1.70GHz, 4 cores, 2 threads/core, 8GB RAM\\
+\end{itemize}
+
+\large{\textbf{1}\textit{— What is the distribution of the machines according to their CPU capacity?\\} }
+\textbf{Answer:}\\
+	In order to extract the CPU capacity, I use the machine\_events file. Since there can be multiple events with the same machine\_ID, I filtered the entries to have a list with no machine\_ID duplicates, then I counted how many machines correspond to each CPU type.
+	
+	Elapsed time: 2.262s.
+	\begin{table}[h!]
+		\begin{center}
+			\begin{tabular}{|c | c |} 
+				\hline
+				CPU & Machines\\ [0.5ex] 
+				\hline\hline
+				1  		& 	29.1  \\ [0.5ex] \hline
+				0.25  	& 123 \\ [0.5ex] \hline
+				0.5  	& 11632  \\ [0.5ex] \hline
+				1  		& 796  \\ [0.5ex] \hline
+				Unknown  & 32  \\ [0.5ex] \hline
+			\end{tabular}
+			\caption{ Machines distribution over CPU capacity}
+			\label{table_mutation_rate}
+		\end{center}
+	\end{table}\\
+
+
+\large{\textbf{2}\textit{— What is the percentage of computational power lost due to maintenance (a machine went
+		offline and reconnected later)?\\} }
+\textbf{Answer:}\\
+For a machine, I will consider the lost computational power as the time interval in which the machine is down('DOWN' time): after an event 'Remove'. I will compute the total time during a machine is running('UP' time) and from this we can easily obtain the total 'DOWN' time.
+
+During the trace, a machine is usually passing through a succession of alternate operations 'Add' and 'Remove'('Update' operations do not change anything), therefore the total up can be computed as a sum of $\Delta t_n=time_{R} - time_{A}$, where $time_{R}$, $time_{A}$ are successive timestamps of the same machine(A=Add, R=Remove).
+
+\begin{equation}
+	totalTime_{UP} = time_{R1} - time_{A1} + time_{R2} - time_{A2}+...
+\end{equation}
+
+To compute $totalTime_{UP}$, I use first a \textbf{map} operation to associate a timestamp for each machine, and the timestamp is negative if the event has the type 'Add'. Then, with a \textbf{reduceByKey} I compute the sum from Eq.(1) for each machine\_ID.
+
+An important detail is that the last event for each machine has indefinite action time, hence I will consider the stop trace time, as the timestamp of the last event from the dataset.
+
+After running the computations, I obtained the following percentages:
+
+\textbf{Running time} $\approx$ 96.1$\%$\\
+\textbf{Lost time} $\approx$ 3.9$\%$
+
+
+\end{document}
