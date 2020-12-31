@@ -10,12 +10,14 @@ machine_events_file = '../data/machine_events/part-00000-of-00001.csv'
 
 # Fields dictionaries for each file
 machine_ev_f = {'time':0, 'machine_ID':1, 'event':2, 'platform_ID':3, 'CPUs':4, 'Memory':5}
-task_ev_f = {'time':0, 'job_ID':2, 'task_index':3, 'scheduling_class':7, 'priority':8}
+task_ev_f = {'time':0, 'job_ID':2, 'task_index':3, 'scheduling_class':7, 'priority':8, 'event_type':5, 'machine_ID':4, 'req_RAM':10}
 job_ev_f = {'time':0, 'job_ID':2, 'scheduling_class':5}
+task_usage_f = {'job_ID':2, 'task_index':3, 'used_RAM':6}
 
 
 # Start trace in microseconds
 START_TRACE = 600000000 
+EVICT=2
 
 class Analyzer(object):
     """
@@ -200,7 +202,7 @@ class Analyzer(object):
         acc_job = self.sc.parallelize([])
         start = time.time()
         
-        for i in range(-1, -1):
+        for i in range(-1, 499):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 2)
 
@@ -218,13 +220,13 @@ class Analyzer(object):
 
             acc_job = self.sc.parallelize(acc_job)
 
-            self.uncache(job_events_RDD)
+            # self.uncache(job_events_RDD)
         
         # # Sort the pairs in ascending order by the job_ID
         # acc_job = acc_job.sortBy(lambda x: x[0])
 
         acc_tasks = self.sc.parallelize([])
-        for i in range(-1, 1):
+        for i in range(-1, 499):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -257,7 +259,9 @@ class Analyzer(object):
         # Delete the job_ID
         join_pairs = acc_job.join(acc_tasks_join).map(lambda x: x[1])
 
-        join_pairs = sc.parallelize(join_pairs.fold([], lambda x, y: x+y))
+        # print(join_pairs[0])
+
+        # join_pairs = self.sc.parallelize(join_pairs.fold([], lambda x, y: x+y))
 
         join_pairs_sums = join_pairs.reduceByKey(lambda x, y: (x[0]+y[0], x[1]+y[1]))
         join_pairs_counts = self.sc.parallelize(list(join_pairs.countByKey().items()))
@@ -266,3 +270,111 @@ class Analyzer(object):
 
         print('join_pairs_join')
         print(join_pairs_join)
+
+
+    def question5(self):
+        """
+        Do tasks with low priority have a higher probability of being evicted?
+        """
+        acc_tasks = self.sc.parallelize([])
+        # Loop over all the 'task_event' files and get the useful info from each one of them.
+        for i in range(-1, 1):
+            # Generate the next file_name to be processed
+            file_name = self.utils.get_next_file(i, 1)
+            print('Processing file: {}'.format(file_name))
+            task_events_RDD = self.read_file(file_name)
+
+            # From the task_events RDD, create tuples of: task_index, priority, and event_type
+            acc_tasks = task_events_RDD.map(lambda x: (int(x[task_ev_f['task_index']]), (int(x[task_ev_f['priority']]), int(x[task_ev_f['event_type']]))))
+
+            # Concatenate the tuples of the current file to the accumulator
+            acc_tasks = acc_tasks.union(acc_tasks).collect()
+
+            # Keep an unique occurrence of each tuple
+            acc_tasks = set(acc_tasks)
+
+            # Load the previous resul in an RDD
+            acc_tasks = self.sc.parallelize(acc_tasks)
+
+
+        # For a certain key(task_index), keep only the task entry that has 'EVICT' event type
+        # If none of them has the 'EVICT' type, keep any
+        task_pairs = acc_tasks.reduceByKey(lambda x, y: compare(x,y))
+
+        # Remove the 'task_index' from the tuple
+        total_nb_entries_per_prio = task_pairs.map(lambda x: (x[1][0], x[1][1]))
+
+        # Count how many tasks exist with a certain priority
+        total_nb_entries_per_prio = self.sc.parallelize(list(total_nb_entries_per_prio.countByKey().items()))
+
+        # Count how many EVICT task exist with a certain priority
+        total_evicted_entries = task_pairs.filter(lambda x: x[1][1] == EVICT).map(lambda x: (x[1][0],x[1][1]))
+        total_evicted_entries = self.sc.parallelize(list(total_evicted_entries.countByKey().items()))
+
+        # Compute the percentage of evicted tasks, by computing the ratio betwen the #evicted and #tasks
+        combined_entries = total_evicted_entries.join(total_nb_entries_per_prio).map(lambda x: (x[0], x[1][0] / x[1][1])).collect()
+
+        print('combined_entries')
+        print(combined_entries)
+
+
+    def question6(self):
+        """
+        In general, do tasks from the same job run on the same machine?
+        """
+        acc_tasks = self.sc.parallelize([])
+        for i in range(-1, 0):
+            # Generate the next file_name to be processed
+            file_name = self.utils.get_next_file(i, 1)
+            print('Processing file: {}'.format(file_name))
+
+            task_events_RDD = self.read_file(file_name)
+
+            # From the task_events RDD, create pairs of job_ID and machine_ID for each entry
+            acc_tasks = task_events_RDD.map(lambda x: (int(x[task_ev_f['job_ID']]), x[task_ev_f['machine_ID']]))
+
+            # Since in the dataset there exist some tasks that don't have a machine_ID, we filter them out
+            acc_tasks = acc_tasks.filter(lambda x: x[1] != '')
+
+            acc_tasks = acc_tasks.union(acc_tasks).collect()
+            # Keep an unique occurrence of each entry(remove the duplicates)
+            acc_tasks = set(acc_tasks)
+            acc_tasks = self.sc.parallelize(acc_tasks)
+        
+        # Count on how many machines the tasks from a job are runnning
+        machines_for_a_job = self.sc.parallelize(list(acc_tasks.countByKey().items()))
+
+        # Count how many jobs are running on a certain number of machines.
+        # The pairs have the following form: (number_of_different_machines, number of jobs).
+        # Each job is running on number_of_different_machines machines.
+        machines = machines_for_a_job.map(lambda x: (x[1],1)).reduceByKey(lambda x, y: x+y).collect()
+
+        print(machines)
+
+    
+    def question7(parameter_list):
+        """
+        docstring
+        
+        mean CPU usage rate
+        canonical memory usage
+        
+        Ask the professor about the used CPU cores
+                                mean disk used
+        """
+        acc_tasks = self.sc.parallelize([])
+        # for i in range(-1, 0):
+        #     # Generate the next file_name to be processed
+        #     file_name = self.utils.get_next_file(i, 1)
+        #     print('Processing file: {}'.format(file_name))
+
+        #     task_events_RDD = self.read_file(file_name)
+
+        #     # From the task_events RDD, create pairs of job_ID and task_index for each entry
+        #     acc_tasks = task_events_RDD.map(lambda x: (int(x[task_ev_f['job_ID']]), x[task_ev_f['task_index']], x[task_ev_f['req_RAM']]))
+
+        #     acc_tasks = acc_tasks.union(acc_tasks).collect()
+
+        #     acc_tasks = set(acc_tasks)
+
+        #     acc_tasks = self.sc.parallelize(acc_tasks)

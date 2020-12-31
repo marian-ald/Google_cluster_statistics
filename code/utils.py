@@ -14,6 +14,19 @@ def extend(a, b):
     a.extend(b)
     return a
 
+def compare(x, y):
+    """
+    docstring
+    """
+    if x == y:
+        return x
+    elif x[1] == 'E':  
+        return x
+    elif y[1] == 'E':  
+        return y
+    else:
+        return x
+
 class Utils(object):
     """
     Helper file fo different opperations that are not dirrectly related to
