@@ -278,7 +278,7 @@ class Analyzer(object):
         """
         acc_tasks = self.sc.parallelize([])
         # Loop over all the 'task_event' files and get the useful info from each one of them.
-        for i in range(-1, 1):
+        for i in range(-1, 499):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -323,7 +323,7 @@ class Analyzer(object):
         In general, do tasks from the same job run on the same machine?
         """
         acc_tasks = self.sc.parallelize([])
-        for i in range(-1, 0):
+        for i in range(-1, 499):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
