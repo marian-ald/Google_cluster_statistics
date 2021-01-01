@@ -196,12 +196,13 @@ class Analyzer(object):
 
     def question4(self):
         """
-            # On average, how many tasks compose a job?
+            # Relationship between the scheduling class of a job, the scheduling class of its tasks, and their priority
         """    
         print('\nQuestion 4')
         acc_job = self.sc.parallelize([])
         start = time.time()
-        
+
+        # Extracting the needed information from Job event table
         for i in range(-1, 499):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 2)
@@ -213,11 +214,11 @@ class Analyzer(object):
             # From the task_events RDD, create pairs of job_ID and scheduling class for each entry
             job_pairs = job_events_RDD.map(lambda x: (int(x[job_ev_f['job_ID']]), int(x[job_ev_f['scheduling_class']])))
 
-            # Append the pairs(job_ID, sch_class) from each file to the acumulator and remove duplicates
+            # Append the pairs(job_ID, sch_class) from each file to the accumulator and remove duplicates
             acc_job = acc_job.union(job_pairs).collect()
-
+            # Keep an unique occurrence of each entry
             acc_job = set(acc_job)
-
+            # Load the previous results in an RDD
             acc_job = self.sc.parallelize(acc_job)
 
             # self.uncache(job_events_RDD)
@@ -225,6 +226,7 @@ class Analyzer(object):
         # # Sort the pairs in ascending order by the job_ID
         # acc_job = acc_job.sortBy(lambda x: x[0])
 
+        # Extracting the needed information from Task event table
         acc_tasks = self.sc.parallelize([])
         for i in range(-1, 499):
             # Generate the next file_name to be processed
@@ -233,26 +235,26 @@ class Analyzer(object):
 
             task_events_RDD = self.read_file(file_name)
 
-            # From the task_events RDD, create pairs of job_ID and task_index for each entry
+            # From the task_events RDD, create pairs of job_ID and task_index,scheduling_class,priority for each entry
             task_pairs = task_events_RDD.map(lambda x: (int(x[task_ev_f['job_ID']]), (int(x[task_ev_f['task_index']]),
                                                         int(x[task_ev_f['scheduling_class']]), int(x[task_ev_f['priority']]))))
 
-            # Append the pairs(job_ID, task_index) from each file to the acumulator and remove duplicates
+            # Append the pairs(job_ID, task_index) from each file to the accumulator
             acc_tasks = acc_tasks.union(task_pairs).collect()
-
+            # Removing duplicates
             acc_tasks = set(acc_tasks)
 
             acc_tasks = self.sc.parallelize(acc_tasks)
 
-
+        # Create pairs of job_ID and scheduling_class,priority
         acc_tasks = acc_tasks.map(lambda x: (x[0], (x[1][1], x[1][2])))
-        
 
         acc_tasks_sums = acc_tasks.reduceByKey(lambda x, y: (x[0]+y[0], x[1]+y[1]))
+        # Counting the number of tasks
         acc_tasks_counts = self.sc.parallelize(list(acc_tasks.countByKey().items()))
 
         acc_tasks_join = acc_tasks_sums.join(acc_tasks_counts)
-
+        # Calculating the average of scheduling_class and priority
         acc_tasks_join = acc_tasks_join.map(lambda x: (x[0], (x[1][0][0]/x[1][1], x[1][0][1]/x[1][1])))
 
 
@@ -265,6 +267,8 @@ class Analyzer(object):
 
         join_pairs_sums = join_pairs.reduceByKey(lambda x, y: (x[0]+y[0], x[1]+y[1]))
         join_pairs_counts = self.sc.parallelize(list(join_pairs.countByKey().items()))
+
+        # Joining both results and creating a pairs of priority and scheduling_class of jobs, scheduling_class of tasks
         join_pairs_join = join_pairs_sums.join(join_pairs_counts)
         join_pairs_join = join_pairs_join.map(lambda x: (x[0], (x[1][0][0]/x[1][1], x[1][0][1]/x[1][1]))).collect()
 
