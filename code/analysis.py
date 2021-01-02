@@ -268,7 +268,7 @@ class Analyzer(object):
         join_pairs_sums = join_pairs.reduceByKey(lambda x, y: (x[0]+y[0], x[1]+y[1]))
         join_pairs_counts = self.sc.parallelize(list(join_pairs.countByKey().items()))
 
-        # Joining both results and creating a pairs of priority and scheduling_class of jobs, scheduling_class of tasks
+        # Joining both results and creating a pairs of scheduling_class of jobs and average scheduling_class of tasks,average priority
         join_pairs_join = join_pairs_sums.join(join_pairs_counts)
         join_pairs_join = join_pairs_join.map(lambda x: (x[0], (x[1][0][0]/x[1][1], x[1][0][1]/x[1][1]))).collect()
 
