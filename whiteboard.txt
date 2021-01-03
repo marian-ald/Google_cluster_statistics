@@ -1,0 +1,348 @@
+
+Job table					Tasks table
+
+
+
+1		0
+1		0
+
+Job_id  job_class				Job_id		Priority 	Task_Class
+1			0					1			x			a
+2			3					2			y			b
+3			1					3			z			c
+4			0
+
+
+[(job_id, (job_class, (av_prio, avr)))]
+
+(0, (x, a))
+(0, (v, d))
+(3, (y, b))
+
+
+
+
+After map:
+
+(job_class, (priority, class))
+
+
+
+Left side:
+- compute (jobd_id, class) pairs
+
+s
+1	2 3
+1	1 3
+2	1 1
+
+RDD1(sum)
+1	(s1, s2)
+2	...
+
+	count
+RDD2
+1	2
+2	1
+
+[(1, [(2, 3), (1, 3)]), (2, [(1,1)])]
+
+
+Q4
+
+Extract all:
+
+(task_id, task,_prio, event_type)
+
+|
+|
+|
+|  
+|_._._._._._.______
+
+Percentage = #of evicted tasks(p) / # of task(p)
+
+p=0..10
+
+1		1	 E
+1		1	 R
+1		1	 R
+1		1	 R
+
+
+
+
+2		1	 E
+3		1	 R
+
+
+
+1		1	 E
+2		1	 E
+
+
+
+1		1	 E
+2		1	 E
+4		2	 E
+5	 	2	 E
+
+
+1 a
+2 s
+3 v
+4
+5
+	
+1 c
+2 d
+3 v
+4
+5
+(1, (a, b))
+
+P(1)=2/3
+
+
+
+[(1,1,E),(1,1,R),(1,1,R)]
+
+
+
+Q6.
+
+(job_ID, task_ID, machine_ID)
+
+1   M1
+1   M2
+1   M3
+
+2   M2
+2   M2
+
+From col1 & col2 => job 1 is runnning on 2 machines
+
+1 3
+2 2
+3 1
+4 1
+
+1 2
+2 1
+3 1
+
+Sol 1
+Nb of jobs on the same machine
+Nb of jobs on different machines
+
+NB of machines
+|
+|
+|
+|
+|
+|
+|____________________ NB of jobs
+
+nb jobs - nb of machines
+2       -      3
+
+
+
+
+Sol 2
+For each job_id: compute  ratio = nb of tasks/nb of machines
+Job_id 1: 3/2
+
+
+___________________________________________________
+Q7
+
+Used RAM
+|            .
+|     .   . 
+|    . .
+| .
+|______________ Requested RAM
+
+From task events:
+
+(job_ID, task_id, req_RAM)
+
+
+From usage:
+
+(job_ID, task_id, start, end, used_RAM)
+
+[((1,0),1),((1,0),2),((1,1),1),((1,1),1),((1,0),1.5)]
+
+1	0    RAM3
+1	0    RAM4
+1	0    RAM5
+1	0    RAM6
+
+(1,0), SUM
+
+(1,0), 4
+
+_________________________________
+
+(job_ID, task_id, req_RAM)
+
+
+((1,0), AV_mem_used)
+
+
+t1 requests 1GB
+
+|600s.............900s|...............1200s|..................1500s
+                  900MB                 1GB					   1.2GB
+t1                t1    		        t1
+
+
+
+
+
+
+Job id
+1		0
+		1
+2		0
+		1
+
+
+0
+1
+0
+1
+
+index != ID
+
+0 1 2 3 4
+
+
+_______________________
+Q8
+
+((job_ID, task_index), prio)
+
+
+((job_ID, task_id), used_RAM)
+
+used_RAM
+|
+|
+|
+|
+|
+|__________________ priority
+
+
+__________________________________________
+
+Q9
+
+(time_stamp, event_type)
+
+task usage
+((job_ID, task_index), interval1(0-5min), average_RAM)
+
+
+
+
+
+(time_stamp, event_type(EVICT))=>(interval(5min), total_evict)
+
+(interval1(0-5min), average_RAM_task1)
+(interval1(0-5min), average_RAM_task2)
+(interval1(0-5min), average_RAM_task3)
+(interval1(0-5min), average_RAM_task4)
+(interval1(0-5min), average_RAM_task5)
+
+
+task usage:
+(1s, EVICT)
+(2s, EVICT)
+(15s, EVICT)
+(56s, EVICT)
+(122s, EVICT)
+(144s, EVICT)
+(119s, EVICT)
+(200s, EVICT)
+(250s, EVICT)
+
+timestamp/300
+(0,EVICT)
+(0,EVICT)
+(0,EVICT)
+(0,EVICT)
+
+
+(0,EVICT)
+(0,EVICT)
+(0,EVICT)
+(0,EVICT)
+(0,EVICT)
+_____________________(interval1(5min), 9)
+
+
+(311s, EVICT)
+(333s, EVICT)
+(399s, EVICT)
+
+(1, EVICT)
+(1, EVICT)
+(1, EVICT)
+
+
+_____________________(interval2(5min), 3)
+
+
+After countByKey
+(0,9)
+(1,3)
+
+
+
+600 026 913 - 600 000 000
+			   26 913  / 300 000 000  = 0
+
+900 121 121 - 600 000 000
+			  300 121 121 / 300 000 000 = 1
+ 
+
+1 200 000 000 - 600.000.000 =
+			  600 000 000 / 3...        = 2
+
+
+_____________________________________________________________
+
+TODOs:
+
+1. Find some more new questions(check the paper cited in the project)(3-4).
+	2. Comment the remaining code.
+	3. Change the for loops(with set).
+	4. Add a functionality to save the output(in csv format for example). (in utils.py) Marian
+	5. Add a functionality to plot the outputs.                           (in utils.py) Marian
+	6. Add time measurement in each function
+	7. Create a project in overleaf and add the existing doccument.
+8. Create some scenarions of Studying the performance: nb of cores, ram
+9. Start running.
+10. Spark Dataframe, Pandas(Marian)
+11. Working in the Cloud   (Mahdis)
+12. Study of related publications
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
