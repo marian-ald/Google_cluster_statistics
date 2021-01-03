@@ -12,7 +12,7 @@ machine_events_file = '../data/machine_events/part-00000-of-00001.csv'
 machine_ev_f = {'time':0, 'machine_ID':1, 'event':2, 'platform_ID':3, 'CPUs':4, 'Memory':5}
 task_ev_f = {'time':0, 'job_ID':2, 'task_index':3, 'scheduling_class':7, 'priority':8, 'event_type':5, 'machine_ID':4, 'req_RAM':10}
 job_ev_f = {'time':0, 'job_ID':2, 'scheduling_class':5}
-task_usage_f = {'job_ID':2, 'task_index':3, 'used_RAM':6, 'assigned_RAM':7}
+task_usage_f = {'time_start':0, 'time_end':1, 'job_ID':2, 'task_index':3, 'used_RAM':6, 'assigned_RAM':7}
 
 
 # Start trace in microseconds
@@ -409,9 +409,8 @@ class Analyzer(object):
             # From the task_usage RDD, create pairs of job_ID and task_index, assigned_memory for each entry
             task_pairs = task_usage_RDD.map(lambda x: ((int(x[task_usage_f['job_ID']]), int(x[task_usage_f['task_index']])), float(x[task_usage_f['assigned_RAM']])))
 
-
-
             acc_task_usage = acc_task_usage.union(task_pairs)
+
 
         task_usage_sums = acc_task_usage.reduceByKey(lambda x, y: x + y)
 
@@ -423,3 +422,127 @@ class Analyzer(object):
         join_req_and_used_mem = acc_tasks.join(average_usage).collect()
 
         print(join_req_and_used_mem[:5])
+
+
+    def question8(self):
+
+        """
+        """
+        acc_tasks = self.sc.parallelize([])
+        for i in range(-1, 1):
+            # Generate the next file_name to be processed
+            file_name = self.utils.get_next_file(i, 1)
+            print('Processing file: {}'.format(file_name))
+
+            task_events_RDD = self.read_file(file_name)
+
+            # From the task_usage RDD, create pairs of job_ID and task_index, event_type and mem_usage for each entry
+            task_pairs = task_events_RDD.map(lambda x: ((int(x[task_ev_f['job_ID']]), int(x[task_ev_f['task_index']])), int(x[task_ev_f['priority']])))
+
+            # task_pairs = task_pairs.filter(lambda x: x[3] != '')
+
+            # task_pairs = task_pairs.filter(lambda x: x[2] == SCHEDULE).map(lambda x: ((x[0], x[1]), float(x[3])))
+
+            acc_tasks = acc_tasks.union(task_pairs)
+
+            if (i + 2) % 100 == 0:
+                acc_tasks = acc_tasks.distinct().collect()
+
+                acc_tasks = self.sc.parallelize(acc_tasks)
+
+        acc_task_usage = self.sc.parallelize([])
+        for i in range(-1, 1):
+            # Generate the next file_name to be processed
+            file_name = self.utils.get_next_file(i, 3)
+            print('Processing file: {}'.format(file_name))
+
+            task_usage_RDD = self.read_file(file_name)
+
+            # From the task_usage RDD, create pairs of job_ID and task_index, assigned_memory for each entry
+            task_pairs = task_usage_RDD.map(lambda x: ((int(x[task_usage_f['job_ID']]), int(x[task_usage_f['task_index']])), float(x[task_usage_f['assigned_RAM']])))
+
+            acc_task_usage = acc_task_usage.union(task_pairs)
+
+
+        task_usage_sums = acc_task_usage.reduceByKey(lambda x, y: x + y)
+
+        task_usage_counts = self.sc.parallelize(list(acc_task_usage.countByKey().items()))
+
+        average_usage = task_usage_sums.join(task_usage_counts).map(lambda x: (x[0], x[1][0] / x[1][1]))
+
+
+        join_req_and_used_mem = acc_tasks.join(average_usage)
+
+        join_req_and_used_mem = join_req_and_used_mem.distinct().map(lambda x: x[1])
+
+
+        # Compute the sums of average RAM for each priority
+        sums_ram_for_prio = join_req_and_used_mem.reduceByKey(lambda x, y: x + y)
+
+        count_keys = self.sc.parallelize(list(join_req_and_used_mem.countByKey().items()))
+
+        average_usage = sums_ram_for_prio.join(count_keys).map(lambda x: (x[0], x[1][0] / x[1][1])).collect()
+
+        # for i in range(20):
+        #     print(join_req_and_used_mem[i])
+
+        print(average_usage)
+
+
+    def question9(self):
+        """
+        """
+        acc_tasks = self.sc.parallelize([])
+        for i in range(-1, 1):
+            # Generate the next file_name to be processed
+            file_name = self.utils.get_next_file(i, 1)
+            print('Processing file: {}'.format(file_name))
+
+            task_events_RDD = self.read_file(file_name)
+
+            # From the task_usage RDD, create pairs of job_ID and task_index, event_type and mem_usage for each entry
+            task_pairs = task_events_RDD.map(lambda x: (int(x[task_ev_f['time']]), int(x[task_ev_f['event_type']])))
+
+            task_pairs = task_pairs.filter(lambda x: x[1] == EVICT)
+
+            task_pairs = task_pairs.map(lambda x: (int((x[0] - 6*10**8) / (3*10**8)), x[1]))
+
+            acc_tasks = acc_tasks.union(task_pairs)
+
+            # if (i + 2) % 100 == 0:
+            #     acc_tasks = acc_tasks.distinct().collect()
+
+            #     acc_tasks = self.sc.parallelize(acc_tasks)
+
+            # If Java heap error: do a collect between files(~100 files)
+
+        evict_ev_per_interval =  self.sc.parallelize(list(acc_tasks.countByKey().items())).collect()
+
+        print(evict_ev_per_interval[:10])
+
+
+        acc_task_usage = self.sc.parallelize([])
+        for i in range(-1, 1):
+            # Generate the next file_name to be processed
+            file_name = self.utils.get_next_file(i, 3)
+            print('Processing file: {}'.format(file_name))
+
+            task_usage_RDD = self.read_file(file_name)
+
+            # From the task_usage RDD, create pairs of job_ID and task_index, assigned_memory for each entry
+            task_usage_pairs = task_usage_RDD.map(lambda x: (int(x[task_usage_f['time_start']]), float(x[task_usage_f['assigned_RAM']])))
+
+            task_usage_pairs = task_usage_pairs.map(lambda x: (int((x[0] - 6*10**8) / (3*10**8)), x[1]))
+
+            # count_keys = self.sc.parallelize(list(task_usage_pairs.countByKey().items()))
+            mem_sums_per_interval = task_usage_pairs.reduceByKey(lambda x,y: x + y)
+
+            acc_task_usage = acc_task_usage.union(mem_sums_per_interval)
+
+
+        mem_sums_per_interval = acc_task_usage.reduceByKey(lambda x,y: x + y)
+        
+        mem_sums_per_interval = mem_sums_per_interval.sortByKey().collect()
+
+        print(mem_sums_per_interval[:10])
+

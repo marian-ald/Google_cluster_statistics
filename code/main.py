@@ -16,4 +16,8 @@ if __name__ == '__main__':
 
     # analyzer.question6()
 
-    analyzer.question7()
+    # analyzer.question7()
+
+    # analyzer.question8()
+
+    analyzer.question9()
