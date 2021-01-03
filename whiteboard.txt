@@ -320,11 +320,11 @@ _____________________________________________________________
 TODOs:
 
 1. Find some more new questions(check the paper cited in the project)(3-4).
-	2. Comment the remaining code.
-	3. Change the for loops(with set).
+	(2.) Comment the remaining code.
+	(3.) Change the for loops(with set).
 	4. Add a functionality to save the output(in csv format for example). (in utils.py) Marian
 	5. Add a functionality to plot the outputs.                           (in utils.py) Marian
-	6. Add time measurement in each function
+	(6.) Add time measurement in each function
 	7. Create a project in overleaf and add the existing doccument.
 8. Create some scenarions of Studying the performance: nb of cores, ram
 9. Start running.

@@ -283,12 +283,18 @@ class Analyzer(object):
         print('join_pairs_join')
         print(join_pairs_join)
 
+        end = time.time()
+        print("Time: {}".format(end-start))
 
     def question5(self):
         """
         Do tasks with low priority have a higher probability of being evicted?
         """
+        print('\nQuestion 5')
+        # Accumulator for the information from all 500 task events files
         acc_tasks = self.sc.parallelize([])
+        start = time.time()
+
         # Loop over all the 'task_event' files and get the useful info from each one of them.
         for i in range(-1, 499):
             # Generate the next file_name to be processed
@@ -302,11 +308,14 @@ class Analyzer(object):
             # Concatenate the tuples of the current file to the accumulator
             acc_tasks = acc_tasks.union(job_pairs).collect()
 
-            # Keep an unique occurrence of each tuple
-            acc_tasks = set(acc_tasks)
+            # Keep an unique occurrence of each entry(remove the duplicates)
+            if (i + 2) % 100 == 0:
+                acc_tasks = acc_tasks.distinct().collect()
+                # Load the previous result in an RDD
+                acc_tasks = self.sc.parallelize(acc_tasks)
 
-            # Load the previous resul in an RDD
-            acc_tasks = self.sc.parallelize(acc_tasks)
+            # acc_tasks = set(acc_tasks)
+            # acc_tasks = self.sc.parallelize(acc_tasks)
 
 
         # For a certain key(task_index), keep only the task entry that has 'EVICT' event type
@@ -329,12 +338,18 @@ class Analyzer(object):
         print('combined_entries')
         print(combined_entries)
 
+        end = time.time()
+        print("Time: {}".format(end-start))
 
     def question6(self):
         """
         In general, do tasks from the same job run on the same machine?
         """
+        print('\nQuestion 6')
+        # Accumulator for the information from all 500 task events files
         acc_tasks = self.sc.parallelize([])
+        start = time.time()
+
         for i in range(-1, 499):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
@@ -349,9 +364,15 @@ class Analyzer(object):
             acc_tasks = acc_tasks.filter(lambda x: x[1] != '')
 
             acc_tasks = acc_tasks.union(acc_tasks).collect()
+
             # Keep an unique occurrence of each entry(remove the duplicates)
-            acc_tasks = set(acc_tasks)
-            acc_tasks = self.sc.parallelize(acc_tasks)
+            if (i + 2) % 100 == 0:
+                acc_tasks = acc_tasks.distinct().collect()
+
+                acc_tasks = self.sc.parallelize(acc_tasks)
+
+            # acc_tasks = set(acc_tasks)
+            # acc_tasks = self.sc.parallelize(acc_tasks)
         
         # Count on how many machines the tasks from a job are runnning
         machines_for_a_job = self.sc.parallelize(list(acc_tasks.countByKey().items()))
@@ -363,10 +384,12 @@ class Analyzer(object):
 
         print(machines)
 
+        end = time.time()
+        print("Time: {}".format(end-start))
     
     def question7(self):
         """
-        docstring
+        Are the tasks that request the more resources the one that consume the more resources?
         
         mean CPU usage rate
         canonical memory usage
@@ -374,7 +397,11 @@ class Analyzer(object):
         Ask the professor about the used CPU cores
                                 mean disk used
         """
+        print('\nQuestion 7')
+        # Accumulator for the information from all 500 task events files
         acc_tasks = self.sc.parallelize([])
+        start = time.time()
+
         for i in range(-1, 0):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
@@ -385,11 +412,11 @@ class Analyzer(object):
             # From the task_usage RDD, create pairs of job_ID and task_index, event_type and mem_usage for each entry
             task_pairs = task_events_RDD.map(lambda x: (int(x[task_ev_f['job_ID']]), int(x[task_ev_f['task_index']]), int(x[task_ev_f['event_type']]), x[task_ev_f['req_RAM']]))
 
+            # Removing the entries that do not have requested RAM
             task_pairs = task_pairs.filter(lambda x: x[3] != '')
-
+            # Filtering the scheduled event type for tasks
             task_pairs = task_pairs.filter(lambda x: x[2] == SCHEDULE).map(lambda x: ((x[0], x[1]), float(x[3])))
 
-            
 
             acc_tasks = acc_tasks.union(task_pairs)
 
@@ -411,24 +438,31 @@ class Analyzer(object):
 
             acc_task_usage = acc_task_usage.union(task_pairs)
 
-
+        # Do the summation for assigned_RAM
         task_usage_sums = acc_task_usage.reduceByKey(lambda x, y: x + y)
 
         task_usage_counts = self.sc.parallelize(list(acc_task_usage.countByKey().items()))
-
+        # Get the average for assigned_memory
         average_usage = task_usage_sums.join(task_usage_counts).map(lambda x: (x[0], x[1][0] / x[1][1]))
 
-
+        # Joining the requested RAM by used_RAM
         join_req_and_used_mem = acc_tasks.join(average_usage).collect()
 
         print(join_req_and_used_mem[:5])
 
+        end = time.time()
+        print("Time: {}".format(end-start))
 
     def question8(self):
 
         """
+        Is there a relation between the amount of resource consumed by tasks and their priority?
         """
+        print('\nQuestion 8')
+        # Accumulator for the information from all 500 task events files
         acc_tasks = self.sc.parallelize([])
+        start = time.time()
+
         for i in range(-1, 1):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
@@ -436,7 +470,7 @@ class Analyzer(object):
 
             task_events_RDD = self.read_file(file_name)
 
-            # From the task_usage RDD, create pairs of job_ID and task_index, event_type and mem_usage for each entry
+            # From the task_events RDD, create pairs of job_ID, task_index and priority for each entry
             task_pairs = task_events_RDD.map(lambda x: ((int(x[task_ev_f['job_ID']]), int(x[task_ev_f['task_index']])), int(x[task_ev_f['priority']])))
 
             # task_pairs = task_pairs.filter(lambda x: x[3] != '')
@@ -463,16 +497,17 @@ class Analyzer(object):
 
             acc_task_usage = acc_task_usage.union(task_pairs)
 
-
+        # Doing the summation of assigned_memory for each pairs (job_ID, task_index) as a key
         task_usage_sums = acc_task_usage.reduceByKey(lambda x, y: x + y)
 
         task_usage_counts = self.sc.parallelize(list(acc_task_usage.countByKey().items()))
 
+        # Calculating the average of assigned_memory for each task
         average_usage = task_usage_sums.join(task_usage_counts).map(lambda x: (x[0], x[1][0] / x[1][1]))
 
-
+        # Joining the tasks by average_usage RDD
         join_req_and_used_mem = acc_tasks.join(average_usage)
-
+        # Removing the duplicates and keeping the average_usage of RAM
         join_req_and_used_mem = join_req_and_used_mem.distinct().map(lambda x: x[1])
 
 
@@ -488,11 +523,18 @@ class Analyzer(object):
 
         print(average_usage)
 
+        end = time.time()
+        print("Time: {}".format(end-start))
 
     def question9(self):
         """
+        correlations between peaks of high resource consumption on some machines and task eviction events?
         """
+        print('\nQuestion 9')
+        # Accumulator for the information from all 500 task events files
         acc_tasks = self.sc.parallelize([])
+        start = time.time()
+
         for i in range(-1, 1):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
@@ -500,11 +542,13 @@ class Analyzer(object):
 
             task_events_RDD = self.read_file(file_name)
 
-            # From the task_usage RDD, create pairs of job_ID and task_index, event_type and mem_usage for each entry
+            # From the task_events RDD, create pairs of timestamps and event_type for each entry
             task_pairs = task_events_RDD.map(lambda x: (int(x[task_ev_f['time']]), int(x[task_ev_f['event_type']])))
 
+            # Filtering out the evicted tasks
             task_pairs = task_pairs.filter(lambda x: x[1] == EVICT)
 
+            # Calculating the time_stamps as an index of interval by dividing each timestamps by 300 000 000
             task_pairs = task_pairs.map(lambda x: (int((x[0] - 6*10**8) / (3*10**8)), x[1]))
 
             acc_tasks = acc_tasks.union(task_pairs)
@@ -516,6 +560,7 @@ class Analyzer(object):
 
             # If Java heap error: do a collect between files(~100 files)
 
+        # Counting the number of evicted tasks for each interval
         evict_ev_per_interval =  self.sc.parallelize(list(acc_tasks.countByKey().items())).collect()
 
         print(evict_ev_per_interval[:10])
@@ -529,20 +574,25 @@ class Analyzer(object):
 
             task_usage_RDD = self.read_file(file_name)
 
-            # From the task_usage RDD, create pairs of job_ID and task_index, assigned_memory for each entry
+            # From the task_usage RDD, create pairs of time_start and  assigned_memory for each entry
             task_usage_pairs = task_usage_RDD.map(lambda x: (int(x[task_usage_f['time_start']]), float(x[task_usage_f['assigned_RAM']])))
 
+            # Calculating the time_start as an index of interval by dividing each time_start by 300 000 000
             task_usage_pairs = task_usage_pairs.map(lambda x: (int((x[0] - 6*10**8) / (3*10**8)), x[1]))
 
             # count_keys = self.sc.parallelize(list(task_usage_pairs.countByKey().items()))
+
+            # Counting the number of assigned_memory for each interval in the same file
             mem_sums_per_interval = task_usage_pairs.reduceByKey(lambda x,y: x + y)
 
             acc_task_usage = acc_task_usage.union(mem_sums_per_interval)
 
-
+        # Counting the number of assigned_memory for each interval between all the usage file
         mem_sums_per_interval = acc_task_usage.reduceByKey(lambda x,y: x + y)
-        
+        # Sorting the pairs based on the interval index
         mem_sums_per_interval = mem_sums_per_interval.sortByKey().collect()
 
         print(mem_sums_per_interval[:10])
 
+        end = time.time()
+        print("Time: {}".format(end-start))
