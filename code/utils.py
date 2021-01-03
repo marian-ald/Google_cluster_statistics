@@ -66,9 +66,18 @@ class Utils(object):
             return '../data/task_events/part-00{}-of-00500.csv'.format(file_no)
         elif file_type == 2:    # job event type
             return '../data/job_events/part-00{}-of-00500.csv'.format(file_no)
+        elif file_type == 3:    # task usage type
+            return '../data/task_usage/part-00{}-of-00500.csv'.format(file_no)
+
 
     def dump_in_file(self, string):
         if self.file == None:
             self.file = open("output.txt", "wa")
         self.file.write(string)
         self.file.write('\n')
+
+
+    # TODO: add plot function for the question 4
+    # TODO: add plot function for the question 5
+    # TODO: add plot function for the question 6
+    # TODO: add plot function for the question 7

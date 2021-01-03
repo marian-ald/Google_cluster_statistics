@@ -12,12 +12,14 @@ machine_events_file = '../data/machine_events/part-00000-of-00001.csv'
 machine_ev_f = {'time':0, 'machine_ID':1, 'event':2, 'platform_ID':3, 'CPUs':4, 'Memory':5}
 task_ev_f = {'time':0, 'job_ID':2, 'task_index':3, 'scheduling_class':7, 'priority':8, 'event_type':5, 'machine_ID':4, 'req_RAM':10}
 job_ev_f = {'time':0, 'job_ID':2, 'scheduling_class':5}
-task_usage_f = {'job_ID':2, 'task_index':3, 'used_RAM':6}
+task_usage_f = {'job_ID':2, 'task_index':3, 'used_RAM':6, 'assigned_RAM':7}
 
 
 # Start trace in microseconds
 START_TRACE = 600000000 
+
 EVICT=2
+SCHEDULE=1
 
 class Analyzer(object):
     """
@@ -30,10 +32,10 @@ class Analyzer(object):
         param_nb_threads = 'local[{}]'.format(nb_threads)
         sc_conf = SparkConf()
 
-        sc_conf.set('spark.executor.memory', '8G')
+        sc_conf.set('spark.executor.memory', '32G')
         sc_conf.set('spark.executor.cores', '8')
-        sc_conf.set('spark.driver.memory', '16G')
-        sc_conf.set('spark.driver.maxResultSize', '8G')
+        sc_conf.set('spark.driver.memory', '32G')
+        sc_conf.set('spark.driver.maxResultSize', '32G')
         sc_conf.set('spark.sql.autoBroadcastJoinThreshol','-1')
         sc_conf.setMaster('local[*]')
 
@@ -214,14 +216,18 @@ class Analyzer(object):
             job_pairs = job_events_RDD.map(lambda x: (int(x[job_ev_f['job_ID']]), int(x[job_ev_f['scheduling_class']])))
 
             # Append the pairs(job_ID, sch_class) from each file to the acumulator and remove duplicates
-            acc_job = acc_job.union(job_pairs).collect()
+            acc_job = acc_job.union(job_pairs)
 
-            acc_job = set(acc_job)
+            if (i + 2) % 100 == 0:
+                acc_job = acc_job.distinct().collect()
+            # acc_job = set(acc_job)
 
-            acc_job = self.sc.parallelize(acc_job)
+                acc_job = self.sc.parallelize(acc_job)
 
             # self.uncache(job_events_RDD)
         
+        # acc_job = acc_job.distinct()
+
         # # Sort the pairs in ascending order by the job_ID
         # acc_job = acc_job.sortBy(lambda x: x[0])
 
@@ -238,12 +244,15 @@ class Analyzer(object):
                                                         int(x[task_ev_f['scheduling_class']]), int(x[task_ev_f['priority']]))))
 
             # Append the pairs(job_ID, task_index) from each file to the acumulator and remove duplicates
-            acc_tasks = acc_tasks.union(task_pairs).collect()
+            acc_tasks = acc_tasks.union(task_pairs)
 
-            acc_tasks = set(acc_tasks)
+            if (i + 2) % 100 == 0:
+                acc_tasks = acc_tasks.distinct().collect()
+            # acc_tasks = set(acc_tasks)
 
-            acc_tasks = self.sc.parallelize(acc_tasks)
+                acc_tasks = self.sc.parallelize(acc_tasks)
 
+        # acc_tasks = acc_tasks.distinct()
 
         acc_tasks = acc_tasks.map(lambda x: (x[0], (x[1][1], x[1][2])))
         
@@ -285,10 +294,10 @@ class Analyzer(object):
             task_events_RDD = self.read_file(file_name)
 
             # From the task_events RDD, create tuples of: task_index, priority, and event_type
-            acc_tasks = task_events_RDD.map(lambda x: (int(x[task_ev_f['task_index']]), (int(x[task_ev_f['priority']]), int(x[task_ev_f['event_type']]))))
+            job_pairs = task_events_RDD.map(lambda x: (int(x[task_ev_f['task_index']]), (int(x[task_ev_f['priority']]), int(x[task_ev_f['event_type']]))))
 
             # Concatenate the tuples of the current file to the accumulator
-            acc_tasks = acc_tasks.union(acc_tasks).collect()
+            acc_tasks = acc_tasks.union(job_pairs).collect()
 
             # Keep an unique occurrence of each tuple
             acc_tasks = set(acc_tasks)
@@ -352,7 +361,7 @@ class Analyzer(object):
         print(machines)
 
     
-    def question7(parameter_list):
+    def question7(self):
         """
         docstring
         
@@ -363,18 +372,51 @@ class Analyzer(object):
                                 mean disk used
         """
         acc_tasks = self.sc.parallelize([])
-        # for i in range(-1, 0):
-        #     # Generate the next file_name to be processed
-        #     file_name = self.utils.get_next_file(i, 1)
-        #     print('Processing file: {}'.format(file_name))
+        for i in range(-1, 0):
+            # Generate the next file_name to be processed
+            file_name = self.utils.get_next_file(i, 1)
+            print('Processing file: {}'.format(file_name))
 
-        #     task_events_RDD = self.read_file(file_name)
+            task_events_RDD = self.read_file(file_name)
 
-        #     # From the task_events RDD, create pairs of job_ID and task_index for each entry
-        #     acc_tasks = task_events_RDD.map(lambda x: (int(x[task_ev_f['job_ID']]), x[task_ev_f['task_index']], x[task_ev_f['req_RAM']]))
+            # From the task_usage RDD, create pairs of job_ID and task_index, event_type and mem_usage for each entry
+            task_pairs = task_events_RDD.map(lambda x: (int(x[task_ev_f['job_ID']]), int(x[task_ev_f['task_index']]), int(x[task_ev_f['event_type']]), x[task_ev_f['req_RAM']]))
 
-        #     acc_tasks = acc_tasks.union(acc_tasks).collect()
+            task_pairs = task_pairs.filter(lambda x: x[3] != '')
 
-        #     acc_tasks = set(acc_tasks)
+            task_pairs = task_pairs.filter(lambda x: x[2] == SCHEDULE).map(lambda x: ((x[0], x[1]), float(x[3])))
 
-        #     acc_tasks = self.sc.parallelize(acc_tasks)
+            
+
+            acc_tasks = acc_tasks.union(task_pairs)
+
+            if (i + 2) % 100 == 0:
+                acc_tasks = acc_tasks.distinct().collect()
+
+                acc_tasks = self.sc.parallelize(acc_tasks)
+
+        acc_task_usage = self.sc.parallelize([])
+        for i in range(-1, 0):
+            # Generate the next file_name to be processed
+            file_name = self.utils.get_next_file(i, 3)
+            print('Processing file: {}'.format(file_name))
+
+            task_usage_RDD = self.read_file(file_name)
+
+            # From the task_usage RDD, create pairs of job_ID and task_index, assigned_memory for each entry
+            task_pairs = task_usage_RDD.map(lambda x: ((int(x[task_usage_f['job_ID']]), int(x[task_usage_f['task_index']])), float(x[task_usage_f['assigned_RAM']])))
+
+
+
+            acc_task_usage = acc_task_usage.union(task_pairs)
+
+        task_usage_sums = acc_task_usage.reduceByKey(lambda x, y: x + y)
+
+        task_usage_counts = self.sc.parallelize(list(acc_task_usage.countByKey().items()))
+
+        average_usage = task_usage_sums.join(task_usage_counts).map(lambda x: (x[0], x[1][0] / x[1][1]))
+
+
+        join_req_and_used_mem = acc_tasks.join(average_usage).collect()
+
+        print(join_req_and_used_mem[:5])
