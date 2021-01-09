@@ -319,7 +319,7 @@ _____________________________________________________________
 
 TODOs:
 
-1. Find some more new questions(check the paper cited in the project)(3-4).
+1.  Find some more new questions(check the paper cited in the project)(3-4).
 	(2.) Comment the remaining code.
 	(3.) Change the for loops(with set).
 	4. Add a functionality to save the output(in csv format for example). (in utils.py) Marian
@@ -327,15 +327,26 @@ TODOs:
 	(6.) Add time measurement in each function
 	7. Create a project in overleaf and add the existing doccument.
 8. Create some scenarions of Studying the performance: nb of cores, ram
+	A. 8 cores, 32 GB RAM
+	B. 4 cores, 32 GB RAM
+	
+
+	A':  4 cores, 32 GB RAM
+	A':  4 cores, 16 GB RAM
+
+
 9. Start running.
 10. Spark Dataframe, Pandas(Marian)
 11. Working in the Cloud   (Mahdis)
 12. Study of related publications
 
 
-
-
-
+Q9(change) Modify the interval from 5min to 60min.
+Q10. What is the distribution of the machines according to their RAM capacity?
+Q11. Figure 1. Frequency of machine shapes as a function of CPU and
+memory (RAM) capacity.(in the paper)
+Q12. What is the distribution of ressourcescosnsumption over jobs?
+Q13. How many events/tasks are Evict,Fails,etc.?
 
 
 

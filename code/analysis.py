@@ -40,21 +40,13 @@ class Analyzer(object):
         sc_conf.setMaster('local[*]')
 
         self.sc = SparkContext(param_nb_threads, conf=sc_conf)
-
-        # conf = new SparkConf()
-        #     .setMaster("local[2]")
-        #     .setAppName("CountingSheep")
-
-        # self.sc = SparkContext(param_nb_threads)
-        # self.sc = SparkSession.builder().master("local[*]").config("spark.executor.memory", "70g").config("spark.driver.memory", "50g")\
-        #         .config("spark.memory.offHeap.enabled", True)\
-        #         .config("spark.memory.offHeap.size","16g")\
-        #         .appName("sampleCodeForReference")\
-        #         .getOrCreate()
-
         self.sc.setLogLevel("ERROR")
 
-        # SparkConf().setMaster('local').setAppName('test').set('spark.local.dir', '/tmp/spark-temp')
+        # self.utils.format_output_files()
+
+        # Number of the current question
+        self.nb_q = 1
+
 
     def read_file(self, file_name):
         # Read machine_events file
@@ -66,6 +58,7 @@ class Analyzer(object):
 
         return file_rdd
 
+
     def uncache(self, rdd_name):
         if rdd_name.is_cached:
             rdd_name.unpersist()
@@ -73,9 +66,10 @@ class Analyzer(object):
 
     def question1(self):
         """
-        What is the distribution of the machine according to their CPU capacity?
+        What is the distribution of the machines according to their CPU capacity?
         """
         print('\nQuestion 1')
+        self.nb_q = 1
 
         machine_ev = self.read_file(machine_events_file)
         start = time.time()
@@ -83,13 +77,13 @@ class Analyzer(object):
         uniques_machines = machine_ev.map(lambda x: (x[machine_ev_f['machine_ID']], x)).reduceByKey(lambda x, _: x).map(lambda x: x[1])
 
         # Count how many machines exists for each type of 'CPUs'
-        distribution = uniques_machines.map(lambda x: (x[machine_ev_f['CPUs']], 1)).reduceByKey(add)
+        distribution = uniques_machines.map(lambda x: (x[machine_ev_f['CPUs']], 1)).reduceByKey(add).collect()
 
-        get_distribution = distribution.collect()
         end = time.time()
-        print(get_distribution)
-        print("Time: {}".format(end-start))
-        self.uncache(machine_ev)
+
+        self.utils.dump_in_file(distribution, self.nb_q)
+        self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
+        # self.uncache(machine_ev)
 
     def question2(self):
         """
@@ -97,6 +91,7 @@ class Analyzer(object):
         offline and reconnected later)?
         """
         print('\nQuestion 2')
+        self.nb_q = 2
 
         machine_ev = self.read_file(machine_events_file)
 
@@ -134,10 +129,12 @@ class Analyzer(object):
         sum_final = sum_final / len(last_events.collect())
 
         end = time.time()
-        print("Time: {}".format(end-start))
 
-        print('Percentage time UP = {}'.format(sum_final/total))
-        print('Percentage time DOWN = {}'.format(1 - sum_final/total))
+
+        self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
+        self.utils.dump_in_file('Percentage time UP = {}'.format(sum_final/total), self.nb_q)
+        self.utils.dump_in_file('Percentage time DOWN = {}'.format(1 - sum_final/total), self.nb_q)
+        
         self.uncache(machine_ev)
 
         
@@ -146,6 +143,7 @@ class Analyzer(object):
             # On average, how many tasks compose a job?
         """    
         print('\nQuestion 3')
+        self.nb_q = 3
 
         # Accumulator for the information from all 500 task events files
         acc = self.sc.parallelize([])
@@ -169,43 +167,39 @@ class Analyzer(object):
 
             acc = self.sc.parallelize(acc)
 
-            # self.uncache(task_events_RDD)
-
         # Count how many tasks exist for each job
         no_tasks_for_a_job = acc.map(lambda x: (x[0],1)).reduceByKey(lambda x, y: x+y)
 
         # Compute the total number of jobs
         number_jobs = no_tasks_for_a_job.count()
-        print('Total number of jobs: {}'.format(number_jobs))
 
-        self.utils.dump_in_file('Total number of jobs: {}'.format(number_jobs))
+        self.utils.dump_in_file('Total number of jobs: {}'.format(number_jobs), self.nb_q)
 
         # Compute how many tasks are in total
         number_tasks = no_tasks_for_a_job.map(lambda x: x[1]).reduce(lambda x, y: x+y)
-        print('Total number of tasks: {}'.format(number_tasks))
-        self.utils.dump_in_file('Total number of tasks: {}'.format(number_tasks))
+
+        self.utils.dump_in_file('Total number of tasks: {}'.format(number_tasks), self.nb_q)
 
         # Mean = no_tasks/no_jobs
         average = float(number_tasks)/float(number_jobs)
         end = time.time()
-        print("Time: {}".format(end-start))
 
-        self.utils.dump_in_file("Time: {}".format(end-start))
-        
-        print('Average number of tasks/job: {}'.format(float(average)))
-        self.utils.dump_in_file('Average number of tasks/job: {}'.format(float(average)))
+        self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
+        self.utils.dump_in_file('Average number of tasks/job: {}'.format(float(average)), self.nb_q)
 
 
     def question4(self):
         """
-            # Relationship between the scheduling class of a job, the scheduling class of its tasks, and their priority
-        """    
+           Relationship between the scheduling class of a job, the scheduling class of its tasks, and their priority
+        """
         print('\nQuestion 4')
+        self.nb_q = 4
+
         acc_job = self.sc.parallelize([])
         start = time.time()
 
         # Extracting the needed information from Job event table
-        for i in range(-1, 499):
+        for i in range(-1, 1):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 2)
 
@@ -221,20 +215,18 @@ class Analyzer(object):
 
             if (i + 2) % 100 == 0:
                 acc_job = acc_job.distinct().collect()
-            # acc_job = set(acc_job)
+                # acc_job = set(acc_job)
 
                 acc_job = self.sc.parallelize(acc_job)
 
             # self.uncache(job_events_RDD)
-        
-        # acc_job = acc_job.distinct()
 
         # # Sort the pairs in ascending order by the job_ID
         # acc_job = acc_job.sortBy(lambda x: x[0])
 
         # Extracting the needed information from Task event table
         acc_tasks = self.sc.parallelize([])
-        for i in range(-1, 499):
+        for i in range(-1, 1):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -265,38 +257,38 @@ class Analyzer(object):
         # Calculating the average of scheduling_class and priority
         acc_tasks_join = acc_tasks_join.map(lambda x: (x[0], (x[1][0][0]/x[1][1], x[1][0][1]/x[1][1])))
 
-
         # Delete the job_ID
         join_pairs = acc_job.join(acc_tasks_join).map(lambda x: x[1])
-
-        # print(join_pairs[0])
 
         # join_pairs = self.sc.parallelize(join_pairs.fold([], lambda x, y: x+y))
 
         join_pairs_sums = join_pairs.reduceByKey(lambda x, y: (x[0]+y[0], x[1]+y[1]))
         join_pairs_counts = self.sc.parallelize(list(join_pairs.countByKey().items()))
 
-        # Joining both results and creating a pairs of scheduling_class of jobs and average scheduling_class of tasks,average priority
+        # Joining both results and creating a pairs of scheduling_class of jobs and average scheduling_class of tasks, average priority
         join_pairs_join = join_pairs_sums.join(join_pairs_counts)
         join_pairs_join = join_pairs_join.map(lambda x: (x[0], (x[1][0][0]/x[1][1], x[1][0][1]/x[1][1]))).collect()
 
-        print('join_pairs_join')
-        print(join_pairs_join)
-
         end = time.time()
-        print("Time: {}".format(end-start))
+        self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
+        self.utils.dump_in_file(join_pairs_join, self.nb_q)
+
+        self.utils.save_object(join_pairs_join, 4, 'class_prio')
+
 
     def question5(self):
         """
-        Do tasks with low priority have a higher probability of being evicted?
+            Do tasks with low priority have a higher probability of being evicted?
         """
         print('\nQuestion 5')
+        self.nb_q = 5
+
         # Accumulator for the information from all 500 task events files
         acc_tasks = self.sc.parallelize([])
         start = time.time()
 
         # Loop over all the 'task_event' files and get the useful info from each one of them.
-        for i in range(-1, 499):
+        for i in range(-1, 7):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -306,7 +298,7 @@ class Analyzer(object):
             job_pairs = task_events_RDD.map(lambda x: (int(x[task_ev_f['task_index']]), (int(x[task_ev_f['priority']]), int(x[task_ev_f['event_type']]))))
 
             # Concatenate the tuples of the current file to the accumulator
-            acc_tasks = acc_tasks.union(job_pairs).collect()
+            acc_tasks = acc_tasks.union(job_pairs)
 
             # Keep an unique occurrence of each entry(remove the duplicates)
             if (i + 2) % 100 == 0:
@@ -316,7 +308,8 @@ class Analyzer(object):
 
             # acc_tasks = set(acc_tasks)
             # acc_tasks = self.sc.parallelize(acc_tasks)
-
+        acc_tasks = acc_tasks.distinct().collect()
+        acc_tasks = self.sc.parallelize(acc_tasks)
 
         # For a certain key(task_index), keep only the task entry that has 'EVICT' event type
         # If none of them has the 'EVICT' type, keep any
@@ -335,22 +328,26 @@ class Analyzer(object):
         # Compute the percentage of evicted tasks, by computing the ratio betwen the #evicted and #tasks
         combined_entries = total_evicted_entries.join(total_nb_entries_per_prio).map(lambda x: (x[0], x[1][0] / x[1][1])).collect()
 
-        print('combined_entries')
-        print(combined_entries)
-
         end = time.time()
-        print("Time: {}".format(end-start))
+
+        self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
+        self.utils.dump_in_file(combined_entries, self.nb_q)
+
+        self.utils.save_object(combined_entries, 5, 'evict_probab')
+
 
     def question6(self):
         """
-        In general, do tasks from the same job run on the same machine?
+            In general, do tasks from the same job run on the same machine?
         """
         print('\nQuestion 6')
+        self.nb_q = 6
+
         # Accumulator for the information from all 500 task events files
         acc_tasks = self.sc.parallelize([])
         start = time.time()
 
-        for i in range(-1, 499):
+        for i in range(-1, 4):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -363,7 +360,7 @@ class Analyzer(object):
             # Since in the dataset there exist some tasks that don't have a machine_ID, we filter them out
             acc_tasks = acc_tasks.filter(lambda x: x[1] != '')
 
-            acc_tasks = acc_tasks.union(acc_tasks).collect()
+            acc_tasks = acc_tasks.union(acc_tasks)
 
             # Keep an unique occurrence of each entry(remove the duplicates)
             if (i + 2) % 100 == 0:
@@ -380,13 +377,14 @@ class Analyzer(object):
         # Count how many jobs are running on a certain number of machines.
         # The pairs have the following form: (number_of_different_machines, number of jobs).
         # Each job is running on number_of_different_machines machines.
-        machines = machines_for_a_job.map(lambda x: (x[1],1)).reduceByKey(lambda x, y: x+y).collect()
-
-        print(machines)
-
+        nb_jobs_on_nb_machines = machines_for_a_job.map(lambda x: (x[1],1)).reduceByKey(lambda x, y: x+y).collect()
         end = time.time()
-        print("Time: {}".format(end-start))
-    
+
+        self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
+        self.utils.dump_in_file(nb_jobs_on_nb_machines, self.nb_q)
+        self.utils.save_object(nb_jobs_on_nb_machines, 6, 'jobs_per_dif_machines')
+
+
     def question7(self):
         """
         Are the tasks that request the more resources the one that consume the more resources?
@@ -394,10 +392,12 @@ class Analyzer(object):
         mean CPU usage rate
         canonical memory usage
         
-        Ask the professor about the used CPU cores
+        TODO: Ask the professor about the used CPU cores
                                 mean disk used
         """
         print('\nQuestion 7')
+        self.nb_q = 7
+
         # Accumulator for the information from all 500 task events files
         acc_tasks = self.sc.parallelize([])
         start = time.time()
@@ -417,13 +417,12 @@ class Analyzer(object):
             # Filtering the scheduled event type for tasks
             task_pairs = task_pairs.filter(lambda x: x[2] == SCHEDULE).map(lambda x: ((x[0], x[1]), float(x[3])))
 
-
             acc_tasks = acc_tasks.union(task_pairs)
 
             if (i + 2) % 100 == 0:
                 acc_tasks = acc_tasks.distinct().collect()
-
                 acc_tasks = self.sc.parallelize(acc_tasks)
+        acc_tasks = acc_tasks.distinct()
 
         acc_task_usage = self.sc.parallelize([])
         for i in range(-1, 0):
@@ -446,19 +445,26 @@ class Analyzer(object):
         average_usage = task_usage_sums.join(task_usage_counts).map(lambda x: (x[0], x[1][0] / x[1][1]))
 
         # Joining the requested RAM by used_RAM
-        join_req_and_used_mem = acc_tasks.join(average_usage).collect()
+        join_req_and_used_mem = acc_tasks.join(average_usage)
 
-        print(join_req_and_used_mem[:5])
+        # Remove the (job_id, task_index) tuples from the RDD
+        req_and_used_mem = join_req_and_used_mem.map(lambda x: x[1]).collect()
+
+        print(req_and_used_mem[:5])
 
         end = time.time()
-        print("Time: {}".format(end-start))
+        self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
+        self.utils.dump_in_file(req_and_used_mem, self.nb_q)
+        self.utils.save_object(req_and_used_mem, 7, 'req_and_used_mem')
+
 
     def question8(self):
-
         """
         Is there a relation between the amount of resource consumed by tasks and their priority?
         """
         print('\nQuestion 8')
+        self.nb_q = 8
+        
         # Accumulator for the information from all 500 task events files
         acc_tasks = self.sc.parallelize([])
         start = time.time()
@@ -507,9 +513,9 @@ class Analyzer(object):
 
         # Joining the tasks by average_usage RDD
         join_req_and_used_mem = acc_tasks.join(average_usage)
+
         # Removing the duplicates and keeping the average_usage of RAM
         join_req_and_used_mem = join_req_and_used_mem.distinct().map(lambda x: x[1])
-
 
         # Compute the sums of average RAM for each priority
         sums_ram_for_prio = join_req_and_used_mem.reduceByKey(lambda x, y: x + y)
@@ -518,19 +524,19 @@ class Analyzer(object):
 
         average_usage = sums_ram_for_prio.join(count_keys).map(lambda x: (x[0], x[1][0] / x[1][1])).collect()
 
-        # for i in range(20):
-        #     print(join_req_and_used_mem[i])
-
-        print(average_usage)
-
         end = time.time()
-        print("Time: {}".format(end-start))
+        self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
+        self.utils.dump_in_file(average_usage, self.nb_q)
+        self.utils.save_object(average_usage, 8, 'used_ram_per_prio')
+
 
     def question9(self):
         """
         correlations between peaks of high resource consumption on some machines and task eviction events?
         """
         print('\nQuestion 9')
+        self.nb_q = 9
+
         # Accumulator for the information from all 500 task events files
         acc_tasks = self.sc.parallelize([])
         start = time.time()
@@ -595,4 +601,8 @@ class Analyzer(object):
         print(mem_sums_per_interval[:10])
 
         end = time.time()
-        print("Time: {}".format(end-start))
+
+        self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
+        # self.utils.dump_in_file(mem_sums_per_interval, self.nb_q)
+        self.utils.save_object(mem_sums_per_interval, 9, 'ram_per_time_interv')
+        self.utils.save_object(evict_ev_per_interval, 9, 'evict_per_time_interv')
