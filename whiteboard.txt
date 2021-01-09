@@ -322,10 +322,10 @@ TODOs:
 1.  Find some more new questions(check the paper cited in the project)(3-4).
 	(2.) Comment the remaining code.
 	(3.) Change the for loops(with set).
-	4. Add a functionality to save the output(in csv format for example). (in utils.py) Marian
-	5. Add a functionality to plot the outputs.                           (in utils.py) Marian
+	(4.) Add a functionality to save the output(in csv format for example). (in utils.py) Marian
+	(5.) Add a functionality to plot the outputs.                           (in utils.py) Marian
 	(6.) Add time measurement in each function
-	7. Create a project in overleaf and add the existing doccument.
+	(7.) Create a project in overleaf and add the existing doccument.
 8. Create some scenarions of Studying the performance: nb of cores, ram
 	A. 8 cores, 32 GB RAM
 	B. 4 cores, 32 GB RAM
@@ -342,7 +342,7 @@ TODOs:
 
 
 Q9(change) Modify the interval from 5min to 60min.
-Q10. What is the distribution of the machines according to their RAM capacity?
+(Q10.) What is the distribution of the machines according to their RAM capacity?
 Q11. Figure 1. Frequency of machine shapes as a function of CPU and
 memory (RAM) capacity.(in the paper)
 Q12. What is the distribution of ressourcescosnsumption over jobs?

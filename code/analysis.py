@@ -5,6 +5,10 @@ import time
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
 
+MEMORY= 0
+CORE= 0
+NUM_FILES= 0
+
 machine_events_file = '../data/machine_events/part-00000-of-00001.csv'
 
 
@@ -32,10 +36,10 @@ class Analyzer(object):
         param_nb_threads = 'local[{}]'.format(nb_threads)
         sc_conf = SparkConf()
 
-        sc_conf.set('spark.executor.memory', '32G')
-        sc_conf.set('spark.executor.cores', '8')
-        sc_conf.set('spark.driver.memory', '32G')
-        sc_conf.set('spark.driver.maxResultSize', '32G')
+        sc_conf.set('spark.executor.memory', MEMORY+'G')
+        sc_conf.set('spark.executor.cores', CORE)
+        sc_conf.set('spark.driver.memory', MEMORY+'G')
+        sc_conf.set('spark.driver.maxResultSize', MEMORY+'G')
         sc_conf.set('spark.sql.autoBroadcastJoinThreshol','-1')
         sc_conf.setMaster('local[*]')
 
@@ -149,7 +153,7 @@ class Analyzer(object):
         acc = self.sc.parallelize([])
         start = time.time()
         # Loop over the task-events files(500 in total)
-        for i in range(-1, 499):
+        for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -199,7 +203,7 @@ class Analyzer(object):
         start = time.time()
 
         # Extracting the needed information from Job event table
-        for i in range(-1, 1):
+        for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 2)
 
@@ -226,7 +230,7 @@ class Analyzer(object):
 
         # Extracting the needed information from Task event table
         acc_tasks = self.sc.parallelize([])
-        for i in range(-1, 1):
+        for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -288,7 +292,7 @@ class Analyzer(object):
         start = time.time()
 
         # Loop over all the 'task_event' files and get the useful info from each one of them.
-        for i in range(-1, 7):
+        for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -347,7 +351,7 @@ class Analyzer(object):
         acc_tasks = self.sc.parallelize([])
         start = time.time()
 
-        for i in range(-1, 4):
+        for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -402,7 +406,7 @@ class Analyzer(object):
         acc_tasks = self.sc.parallelize([])
         start = time.time()
 
-        for i in range(-1, 0):
+        for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -425,7 +429,7 @@ class Analyzer(object):
         acc_tasks = acc_tasks.distinct()
 
         acc_task_usage = self.sc.parallelize([])
-        for i in range(-1, 0):
+        for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 3)
             print('Processing file: {}'.format(file_name))
@@ -469,7 +473,7 @@ class Analyzer(object):
         acc_tasks = self.sc.parallelize([])
         start = time.time()
 
-        for i in range(-1, 1):
+        for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -491,7 +495,7 @@ class Analyzer(object):
                 acc_tasks = self.sc.parallelize(acc_tasks)
 
         acc_task_usage = self.sc.parallelize([])
-        for i in range(-1, 1):
+        for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 3)
             print('Processing file: {}'.format(file_name))
@@ -541,7 +545,7 @@ class Analyzer(object):
         acc_tasks = self.sc.parallelize([])
         start = time.time()
 
-        for i in range(-1, 1):
+        for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -573,7 +577,7 @@ class Analyzer(object):
 
 
         acc_task_usage = self.sc.parallelize([])
-        for i in range(-1, 1):
+        for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 3)
             print('Processing file: {}'.format(file_name))
@@ -606,3 +610,23 @@ class Analyzer(object):
         # self.utils.dump_in_file(mem_sums_per_interval, self.nb_q)
         self.utils.save_object(mem_sums_per_interval, 9, 'ram_per_time_interv')
         self.utils.save_object(evict_ev_per_interval, 9, 'evict_per_time_interv')
+
+    def question10(self):
+        """
+        What is the distribution of the machines according to their RAM capacity?
+        """
+        print('\nQuestion 10')
+        self.nb_q = 10
+
+        machine_ev = self.read_file(machine_events_file)
+        start = time.time()
+        # Extract all unique entries by machine_ID from machine_events
+        uniques_machines = machine_ev.map(lambda x: (x[machine_ev_f['machine_ID']], x)).reduceByKey(lambda x, _: x).map(lambda x: x[1])
+
+        # Count how many machines exists for each type of 'Memory'
+        distribution = uniques_machines.map(lambda x: (x[machine_ev_f['Memory']], 1)).reduceByKey(add).collect()
+
+        end = time.time()
+
+        self.utils.dump_in_file(distribution, self.nb_q)
+        self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)

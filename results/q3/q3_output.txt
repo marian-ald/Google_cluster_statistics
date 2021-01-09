@@ -1,1 +1,9 @@
 Question 3
+Total number of jobs: 5948
+Total number of tasks: 208329
+Time: 15.9546730518
+Average number of tasks/job: 35.0250504371
+Total number of jobs: 7056
+Total number of tasks: 243512
+Time: 19.7467861176
+Average number of tasks/job: 34.5113378685
