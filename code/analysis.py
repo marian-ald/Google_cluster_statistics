@@ -42,7 +42,7 @@ class Analyzer(object):
         self.sc = SparkContext(param_nb_threads, conf=sc_conf)
         self.sc.setLogLevel("ERROR")
 
-        self.utils.format_output_files()
+        # self.utils.format_output_files()
 
         # Number of the current question
         self.nb_q = 1
