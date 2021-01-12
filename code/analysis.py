@@ -5,8 +5,10 @@ import time
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
 
-MEMORY= 0
-CORE= 0
+EXE_MEMORY= 0
+EXE_CORE= 0
+DV_MEMOTY= 0
+DV_MAX= 0
 NUM_FILES= 0
 
 machine_events_file = '../data/machine_events/part-00000-of-00001.csv'
@@ -36,10 +38,10 @@ class Analyzer(object):
         param_nb_threads = 'local[{}]'.format(nb_threads)
         sc_conf = SparkConf()
 
-        sc_conf.set('spark.executor.memory', MEMORY+'G')
-        sc_conf.set('spark.executor.cores', CORE)
-        sc_conf.set('spark.driver.memory', MEMORY+'G')
-        sc_conf.set('spark.driver.maxResultSize', MEMORY+'G')
+        sc_conf.set('spark.executor.memory', EXE_MEMORY+'G')
+        sc_conf.set('spark.executor.cores', EXE_CORE)
+        sc_conf.set('spark.driver.memory', DV_MEMOTY+'G')
+        sc_conf.set('spark.driver.maxResultSize', DV_MAX+'G')
         sc_conf.set('spark.sql.autoBroadcastJoinThreshol','-1')
         sc_conf.setMaster('local[*]')
 
@@ -167,9 +169,14 @@ class Analyzer(object):
             # acc = acc.union(task_pairs).distinct().collect()
             acc = acc.union(task_pairs).collect()
 
-            acc = set(acc)
+            # acc = set(acc)
 
-            acc = self.sc.parallelize(acc)
+            # acc = self.sc.parallelize(acc)
+
+            if (i + 2) % 100 == 0:
+                acc = acc.distinct().collect()
+
+                acc = self.sc.parallelize(acc)
 
         # Count how many tasks exist for each job
         no_tasks_for_a_job = acc.map(lambda x: (x[0],1)).reduceByKey(lambda x, y: x+y)
