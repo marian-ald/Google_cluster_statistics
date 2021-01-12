@@ -80,10 +80,10 @@ class Analyzer(object):
         machine_ev = self.read_file(machine_events_file)
         start = time.time()
         # Extract all unique entries by machine_ID from machine_events
-        uniques_machines = machine_ev.map(lambda x: (x[machine_ev_f['machine_ID']], x)).reduceByKey(lambda x, _: x).map(lambda x: x[1])
+        uniques_machines = machine_ev.map(lambda x: (x[machine_ev_f['CPUs']], x[machine_ev_f['machine_ID']])).distinct()
 
         # Count how many machines exists for each type of 'CPUs'
-        distribution = uniques_machines.map(lambda x: (x[machine_ev_f['CPUs']], 1)).reduceByKey(add).collect()
+        distribution = uniques_machines.map(lambda x: (x[0], 1)).reduceByKey(add).collect()
 
         end = time.time()
 
@@ -548,7 +548,7 @@ class Analyzer(object):
         print('\nQuestion 9')
         self.nb_q = 9
 
-        # Accumulator for the information from all 500 task events files
+        # Accumulator for the information from the task usage files
         acc_tasks = self.sc.parallelize([])
         start = time.time()
 
@@ -599,12 +599,12 @@ class Analyzer(object):
 
             # count_keys = self.sc.parallelize(list(task_usage_pairs.countByKey().items()))
 
-            # Counting the number of assigned_memory for each interval in the same file
+            # Counting the quantity of assigned_memory for each interval in the same file
             mem_sums_per_interval = task_usage_pairs.reduceByKey(lambda x,y: x + y)
 
             acc_task_usage = acc_task_usage.union(mem_sums_per_interval)
 
-        # Counting the number of assigned_memory for each interval between all the usage file
+        # Counting the quantity of assigned_memory for each interval between all the usage file
         mem_sums_per_interval = acc_task_usage.reduceByKey(lambda x,y: x + y)
         # Sorting the pairs based on the interval index
         mem_sums_per_interval = mem_sums_per_interval.sortByKey().collect()
@@ -628,10 +628,10 @@ class Analyzer(object):
         machine_ev = self.read_file(machine_events_file)
         start = time.time()
         # Extract all unique entries by machine_ID from machine_events
-        uniques_machines = machine_ev.map(lambda x: (x[machine_ev_f['machine_ID']], x)).reduceByKey(lambda x, _: x).map(lambda x: x[1])
+        uniques_machines = machine_ev.map(lambda x: (x[machine_ev_f['Memory']], x[machine_ev_f['machine_ID']])).distinct()
 
         # Count how many machines exists for each type of 'Memory'
-        distribution = uniques_machines.map(lambda x: (x[machine_ev_f['Memory']], 1)).reduceByKey(add).collect()
+        distribution = uniques_machines.map(lambda x: (x[0], 1)).reduceByKey(add).collect()
 
         end = time.time()
 
