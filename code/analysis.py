@@ -598,7 +598,7 @@ class Analyzer(object):
             task_usage_pairs = task_usage_pairs.map(lambda x: (int((x[0] - 6*10**8) / (3*10**8)), x[1]))
 
             # count_keys = self.sc.parallelize(list(task_usage_pairs.countByKey().items()))
-
+    
             # Counting the quantity of assigned_memory for each interval in the same file
             mem_sums_per_interval = task_usage_pairs.reduceByKey(lambda x,y: x + y)
 
@@ -621,6 +621,8 @@ class Analyzer(object):
     def question10(self):
         """
         What is the distribution of the machines according to their RAM capacity?
+        
+        Refer at this as Q1.B in the documentation.
         """
         print('\nQuestion 10')
         self.nb_q = 10
@@ -637,3 +639,27 @@ class Analyzer(object):
 
         self.utils.dump_in_file(distribution, self.nb_q)
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
+
+
+    def question11(self):
+        """
+        What is the distribution of machines as a function of CPU and RAM capacity?
+        
+        Refer at this as Q1.C in the documentation.
+        """
+        print('\nQuestion 11')
+        self.nb_q = 11
+
+        machine_ev = self.read_file(machine_events_file)
+        start = time.time()
+        # Extract all unique entries by machine_ID from machine_events
+        uniques_machines = machine_ev.map(lambda x: ((x[machine_ev_f['CPUs']], x[machine_ev_f['Memory']]), x[machine_ev_f['machine_ID']])).distinct()
+
+        # Count how many machines exists for each type of 'Memory'
+        distribution = uniques_machines.map(lambda x: (x[0], 1)).reduceByKey(add).collect()
+
+        end = time.time()
+
+        self.utils.dump_in_file(distribution, self.nb_q)
+        self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
+        self.utils.save_object(distribution, 11, 'cpu_ram_distribution')
