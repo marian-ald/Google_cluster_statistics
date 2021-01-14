@@ -9,7 +9,6 @@ EXE_MEMORY= 0
 EXE_CORE= 0
 DV_MEMOTY= 0
 DV_MAX= 0
-NUM_FILES= 0
 
 machine_events_file = '../data/machine_events/part-00000-of-00001.csv'
 
@@ -155,7 +154,7 @@ class Analyzer(object):
         acc = self.sc.parallelize([])
         start = time.time()
         # Loop over the task-events files(500 in total)
-        for i in range(-1, int(NUM_FILES)):
+        for i in range(-1, 499):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -167,8 +166,7 @@ class Analyzer(object):
 
             # Append the pairs(job_ID, task_index) from each file to the acumulator and remove duplicates
             # acc = acc.union(task_pairs).distinct().collect()
-            acc = acc.union(task_pairs).collect()
-
+            acc = acc.union(task_pairs)
             # acc = set(acc)
 
             # acc = self.sc.parallelize(acc)
@@ -210,7 +208,7 @@ class Analyzer(object):
         start = time.time()
 
         # Extracting the needed information from Job event table
-        for i in range(-1, int(NUM_FILES)):
+        for i in range(-1, 499):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 2)
 
@@ -237,7 +235,7 @@ class Analyzer(object):
 
         # Extracting the needed information from Task event table
         acc_tasks = self.sc.parallelize([])
-        for i in range(-1, int(NUM_FILES)):
+        for i in range(-1, 499):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -299,7 +297,7 @@ class Analyzer(object):
         start = time.time()
 
         # Loop over all the 'task_event' files and get the useful info from each one of them.
-        for i in range(-1, int(NUM_FILES)):
+        for i in range(-1, 499):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -358,7 +356,7 @@ class Analyzer(object):
         acc_tasks = self.sc.parallelize([])
         start = time.time()
 
-        for i in range(-1, int(NUM_FILES)):
+        for i in range(-1, 499):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -413,14 +411,14 @@ class Analyzer(object):
         acc_tasks = self.sc.parallelize([])
         start = time.time()
 
-        for i in range(-1, int(NUM_FILES)):
+        for i in range(-1, 100):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
 
             task_events_RDD = self.read_file(file_name)
 
-            # From the task_usage RDD, create pairs of job_ID and task_index, event_type and mem_usage for each entry
+            # From the task_events RDD, create pairs of job_ID and task_index, event_type and mem_usage for each entry
             task_pairs = task_events_RDD.map(lambda x: (int(x[task_ev_f['job_ID']]), int(x[task_ev_f['task_index']]), int(x[task_ev_f['event_type']]), x[task_ev_f['req_RAM']]))
 
             # Removing the entries that do not have requested RAM
@@ -436,7 +434,7 @@ class Analyzer(object):
         acc_tasks = acc_tasks.distinct()
 
         acc_task_usage = self.sc.parallelize([])
-        for i in range(-1, int(NUM_FILES)):
+        for i in range(-1, 100):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 3)
             print('Processing file: {}'.format(file_name))
@@ -480,7 +478,7 @@ class Analyzer(object):
         acc_tasks = self.sc.parallelize([])
         start = time.time()
 
-        for i in range(-1, int(NUM_FILES)):
+        for i in range(-1, 100):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -502,7 +500,7 @@ class Analyzer(object):
                 acc_tasks = self.sc.parallelize(acc_tasks)
 
         acc_task_usage = self.sc.parallelize([])
-        for i in range(-1, int(NUM_FILES)):
+        for i in range(-1, 100):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 3)
             print('Processing file: {}'.format(file_name))
@@ -552,7 +550,7 @@ class Analyzer(object):
         acc_tasks = self.sc.parallelize([])
         start = time.time()
 
-        for i in range(-1, int(NUM_FILES)):
+        for i in range(-1, 100):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -584,7 +582,7 @@ class Analyzer(object):
 
 
         acc_task_usage = self.sc.parallelize([])
-        for i in range(-1, int(NUM_FILES)):
+        for i in range(-1, 100):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 3)
             print('Processing file: {}'.format(file_name))
