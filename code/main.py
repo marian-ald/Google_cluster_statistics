@@ -3,13 +3,11 @@ import analysis
 import sys
 
 if __name__ == '__main__':
-    
-    analysis.NUM_FILES = sys.argv[2]
-    
-    analysis.EXE_MEMORY= sys.argv[3]
-    analysis.EXE_CORE= sys.argv[4]
-    analysis.DV_MEMOTY= sys.argv[5]
-    analysis.DV_MAX= sys.argv[6]
+        
+    analysis.EXE_MEMORY= sys.argv[2]
+    analysis.EXE_CORE= sys.argv[3]
+    analysis.DV_MEMOTY= sys.argv[4]
+    analysis.DV_MAX= sys.argv[5]
     
     analyzer = Analyzer(8)
     
