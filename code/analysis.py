@@ -430,7 +430,7 @@ class Analyzer(object):
 
             acc_tasks = acc_tasks.union(task_pairs)
 
-            if (i + 2) % PERCENTAGE == 0:
+            if (i + 2) % int(PERCENTAGE) == 0:
                 acc_tasks = acc_tasks.distinct().collect()
                 acc_tasks = self.sc.parallelize(acc_tasks)
         acc_tasks = acc_tasks.distinct()
@@ -496,7 +496,7 @@ class Analyzer(object):
 
             acc_tasks = acc_tasks.union(task_pairs)
 
-            if (i + 2) % PERCENTAGE == 0:
+            if (i + 2) % int(PERCENTAGE) == 0:
                 acc_tasks = acc_tasks.distinct().collect()
 
                 acc_tasks = self.sc.parallelize(acc_tasks)
