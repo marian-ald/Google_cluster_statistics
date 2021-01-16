@@ -1,6 +1,10 @@
 import matplotlib.pyplot as plt
+from matplotlib.legend_handler import HandlerPatch
+from matplotlib.collections import PatchCollection
+import matplotlib.patches as mpatches
 import numpy as np
 import pickle
+import math
 import sys
 
 
@@ -283,4 +287,31 @@ class Utils(object):
         plt.xlabel("Time")
         plt.ylabel("RAM used")
         plt.savefig('../plots/q9/q9_ram_used.png')        
+        plt.show()
+
+
+    def plot_q11(self):
+        """
+        docstring
+        """
+        data = self.load_object(11, 'cpu_ram_distribution')
+        data.remove((('', ''), 32))
+
+        # Cast to float the entries
+        data = [(float(x[1]), (round(float(x[0][0]), 2), round(float(x[0][1]),2))) for x in data]
+        data.sort(key=lambda tup: tup[0])
+
+        fig, ax = plt.subplots()
+        ax.set_xlim(0, 1.1)
+        ax.set_ylim(0, 1.1)
+    
+        # Add circles to the plot
+        for c in data:
+            plt.scatter(c[1][0], c[1][1], marker = "o", s = c[0], alpha = 0.8)
+
+        # Add labels to axis
+        plt.xlabel("CPU capacity")
+        plt.ylabel("RAM capacity")
+        plt.savefig('../plots/q11/q11_req_and_used_mem.png')        
+
         plt.show()
