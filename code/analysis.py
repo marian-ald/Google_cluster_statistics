@@ -413,7 +413,7 @@ class Analyzer(object):
         acc_tasks = self.sc.parallelize([])
         start = time.time()
 
-        for i in range(-1, NUM_FILES):
+        for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -436,7 +436,7 @@ class Analyzer(object):
         acc_tasks = acc_tasks.distinct()
 
         acc_task_usage = self.sc.parallelize([])
-        for i in range(-1, NUM_FILES):
+        for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 3)
             print('Processing file: {}'.format(file_name))
@@ -480,7 +480,7 @@ class Analyzer(object):
         acc_tasks = self.sc.parallelize([])
         start = time.time()
 
-        for i in range(-1, NUM_FILES):
+        for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -502,7 +502,7 @@ class Analyzer(object):
                 acc_tasks = self.sc.parallelize(acc_tasks)
 
         acc_task_usage = self.sc.parallelize([])
-        for i in range(-1, NUM_FILES):
+        for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 3)
             print('Processing file: {}'.format(file_name))
@@ -552,7 +552,7 @@ class Analyzer(object):
         acc_tasks = self.sc.parallelize([])
         start = time.time()
 
-        for i in range(-1, NUM_FILES):
+        for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -584,7 +584,7 @@ class Analyzer(object):
 
 
         acc_task_usage = self.sc.parallelize([])
-        for i in range(-1, NUM_FILES):
+        for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 3)
             print('Processing file: {}'.format(file_name))
