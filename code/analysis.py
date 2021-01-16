@@ -9,6 +9,10 @@ EXE_MEMORY= 0
 EXE_CORE= 0
 DV_MEMOTY= 0
 DV_CORE= 0
+DV_MAX= 0
+
+NUM_FILES= 0
+PERCENTAGE= 0
 
 machine_events_file = '../data/machine_events/part-00000-of-00001.csv'
 
@@ -41,7 +45,7 @@ class Analyzer(object):
         sc_conf.set('spark.executor.cores', EXE_CORE)
         sc_conf.set('spark.driver.memory', DV_MEMOTY+'M')
         sc_conf.set('spark.driver.cores', DV_CORE)
-        # sc_conf.set('spark.driver.maxResultSize', 'G')
+        sc_conf.set('spark.driver.maxResultSize', DV_MAX+'M')
         sc_conf.set('spark.sql.autoBroadcastJoinThreshol','-1')
         sc_conf.setMaster('local[*]')
 
@@ -409,7 +413,7 @@ class Analyzer(object):
         acc_tasks = self.sc.parallelize([])
         start = time.time()
 
-        for i in range(-1, 49):
+        for i in range(-1, NUM_FILES):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -426,13 +430,13 @@ class Analyzer(object):
 
             acc_tasks = acc_tasks.union(task_pairs)
 
-            if (i + 2) % 100 == 0:
+            if (i + 2) % PERCENTAGE == 0:
                 acc_tasks = acc_tasks.distinct().collect()
                 acc_tasks = self.sc.parallelize(acc_tasks)
         acc_tasks = acc_tasks.distinct()
 
         acc_task_usage = self.sc.parallelize([])
-        for i in range(-1, 49):
+        for i in range(-1, NUM_FILES):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 3)
             print('Processing file: {}'.format(file_name))
@@ -476,7 +480,7 @@ class Analyzer(object):
         acc_tasks = self.sc.parallelize([])
         start = time.time()
 
-        for i in range(-1, 49):
+        for i in range(-1, NUM_FILES):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -492,13 +496,13 @@ class Analyzer(object):
 
             acc_tasks = acc_tasks.union(task_pairs)
 
-            if (i + 2) % 100 == 0:
+            if (i + 2) % PERCENTAGE == 0:
                 acc_tasks = acc_tasks.distinct().collect()
 
                 acc_tasks = self.sc.parallelize(acc_tasks)
 
         acc_task_usage = self.sc.parallelize([])
-        for i in range(-1, 49):
+        for i in range(-1, NUM_FILES):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 3)
             print('Processing file: {}'.format(file_name))
@@ -548,7 +552,7 @@ class Analyzer(object):
         acc_tasks = self.sc.parallelize([])
         start = time.time()
 
-        for i in range(-1, 49):
+        for i in range(-1, NUM_FILES):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -580,7 +584,7 @@ class Analyzer(object):
 
 
         acc_task_usage = self.sc.parallelize([])
-        for i in range(-1, 49):
+        for i in range(-1, NUM_FILES):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 3)
             print('Processing file: {}'.format(file_name))
