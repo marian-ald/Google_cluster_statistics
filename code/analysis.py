@@ -496,10 +496,10 @@ class Analyzer(object):
 
             acc_tasks = acc_tasks.union(task_pairs)
 
-            if (i + 2) % int(PERCENTAGE) == 0:
-                acc_tasks = acc_tasks.distinct().collect()
+            # if (i + 2) % int(PERCENTAGE) == 0:
+            #     acc_tasks = acc_tasks.distinct().collect()
 
-                acc_tasks = self.sc.parallelize(acc_tasks)
+            #     acc_tasks = self.sc.parallelize(acc_tasks)
 
         acc_task_usage = self.sc.parallelize([])
         for i in range(-1, int(NUM_FILES)):
