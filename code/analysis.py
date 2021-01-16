@@ -8,7 +8,7 @@ from pyspark.sql import SparkSession
 EXE_MEMORY= 0
 EXE_CORE= 0
 DV_MEMOTY= 0
-DV_MAX= 0
+DV_CORE= 0
 
 machine_events_file = '../data/machine_events/part-00000-of-00001.csv'
 
@@ -37,10 +37,11 @@ class Analyzer(object):
         param_nb_threads = 'local[{}]'.format(nb_threads)
         sc_conf = SparkConf()
 
-        sc_conf.set('spark.executor.memory', EXE_MEMORY+'G')
+        sc_conf.set('spark.executor.memory', EXE_MEMORY+'M')
         sc_conf.set('spark.executor.cores', EXE_CORE)
-        sc_conf.set('spark.driver.memory', DV_MEMOTY+'G')
-        sc_conf.set('spark.driver.maxResultSize', DV_MAX+'G')
+        sc_conf.set('spark.driver.memory', DV_MEMOTY+'M')
+        sc_conf.set('spark.driver.cores', DV_CORE)
+        # sc_conf.set('spark.driver.maxResultSize', 'G')
         sc_conf.set('spark.sql.autoBroadcastJoinThreshol','-1')
         sc_conf.setMaster('local[*]')
 
@@ -163,7 +164,6 @@ class Analyzer(object):
 
             # From the task_events RDD, create pairs of job_ID and task_index for each entry
             task_pairs = task_events_RDD.map(lambda x: (int(x[task_ev_f['job_ID']]), int(x[task_ev_f['task_index']])))
-
             # Append the pairs(job_ID, task_index) from each file to the acumulator and remove duplicates
             # acc = acc.union(task_pairs).distinct().collect()
             acc = acc.union(task_pairs)
@@ -181,12 +181,10 @@ class Analyzer(object):
 
         # Compute the total number of jobs
         number_jobs = no_tasks_for_a_job.count()
-
         self.utils.dump_in_file('Total number of jobs: {}'.format(number_jobs), self.nb_q)
 
         # Compute how many tasks are in total
         number_tasks = no_tasks_for_a_job.map(lambda x: x[1]).reduce(lambda x, y: x+y)
-
         self.utils.dump_in_file('Total number of tasks: {}'.format(number_tasks), self.nb_q)
 
         # Mean = no_tasks/no_jobs
