@@ -507,7 +507,6 @@ class Analyzer(object):
 
         acc_task_usage = self.sc.parallelize([])
 
-        acc_task_usage = self.sc.parallelize([])
         for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 3)
@@ -519,6 +518,9 @@ class Analyzer(object):
             task_pairs = task_usage_RDD.map(lambda x: ((int(x[task_usage_f['job_ID']]), int(x[task_usage_f['task_index']])), float(x[task_usage_f['assigned_RAM']])))
 
             acc_task_usage = acc_task_usage.union(task_pairs)
+
+        acc_task_usage = acc_task_usage.collect()
+        acc_task_usage = self.sc.parallelize(acc_task_usage)
 
         print(' Finished task_usage for loop Q8')
 
