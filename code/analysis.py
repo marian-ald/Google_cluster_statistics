@@ -44,6 +44,7 @@ class Analyzer(object):
         sc_conf.set('spark.executor.memory', EXE_MEMORY+'M')
         sc_conf.set('spark.executor.cores', EXE_CORE)
         sc_conf.set('spark.driver.memory', DV_MEMOTY+'M')
+        sc_conf.set('spark.executor.instances', 1)
         sc_conf.set('spark.driver.cores', DV_CORE)
         sc_conf.set('spark.driver.maxResultSize', DV_MAX+'M')
         sc_conf.set('spark.sql.autoBroadcastJoinThreshol','-1')
@@ -52,6 +53,13 @@ class Analyzer(object):
         self.sc = SparkContext(param_nb_threads, conf=sc_conf)
         self.sc.setLogLevel("ERROR")
 
+        # a = self.sc._conf.get('spark.executor.instances')
+        # print('nb executor instances = {}'.format(a))
+
+        # a = self.sc._conf.get('spark.executor.cores')
+        # print('spark.executor.cores = {}'.format(a))
+
+        # sys.exit()
         # self.utils.format_output_files()
 
         # Number of the current question
