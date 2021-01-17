@@ -301,7 +301,7 @@ class Analyzer(object):
         # Loop over all the 'task_event' files and get the useful info from each one of them.
         for i in range(-1, 499):
             # Generate the next file_name to be processed
-            file_name = self.utils.get_next_file(i, 499)
+            file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
             task_events_RDD = self.read_file(file_name)
 
