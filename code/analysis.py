@@ -498,10 +498,13 @@ class Analyzer(object):
 
             if (i + 2) % int(PERCENTAGE) == 0:
                 acc_tasks = acc_tasks.distinct().collect()
-
                 acc_tasks = self.sc.parallelize(acc_tasks)
 
-        acc_tasks = acc_tasks.distinct()
+        acc_tasks = acc_tasks.distinct().collect()
+        acc_tasks = self.sc.parallelize(acc_tasks)
+
+        print('Processed task_events files')
+
         acc_task_usage = self.sc.parallelize([])
 
         acc_task_usage = self.sc.parallelize([])
@@ -516,6 +519,8 @@ class Analyzer(object):
             task_pairs = task_usage_RDD.map(lambda x: ((int(x[task_usage_f['job_ID']]), int(x[task_usage_f['task_index']])), float(x[task_usage_f['assigned_RAM']])))
 
             acc_task_usage = acc_task_usage.union(task_pairs)
+
+        print(' Finished task_usage for loop Q8')
 
         # Doing the summation of assigned_memory for each pairs (job_ID, task_index) as a key
         task_usage_sums = acc_task_usage.reduceByKey(lambda x, y: x + y)
