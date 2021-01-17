@@ -266,7 +266,7 @@ class Analyzer(object):
 
         acc_tasks_join = acc_tasks_sums.join(acc_tasks_counts)
         # Calculating the average of scheduling_class and priority
-        acc_tasks_join = acc_tasks_join.map(lambda x: (x[0], (x[1][0][0]/x[1][1], x[1][0][1]/x[1][1])))
+        acc_tasks_join = acc_tasks_join.map(lambda x: (x[0], (float(x[1][0][0])/float(x[1][1]), float(x[1][0][1])/float(x[1][1]))))
 
         # Delete the job_ID
         join_pairs = acc_job.join(acc_tasks_join).map(lambda x: x[1])
@@ -278,7 +278,7 @@ class Analyzer(object):
 
         # Joining both results and creating a pairs of scheduling_class of jobs and average scheduling_class of tasks, average priority
         join_pairs_join = join_pairs_sums.join(join_pairs_counts)
-        join_pairs_join = join_pairs_join.map(lambda x: (x[0], (x[1][0][0]/x[1][1], x[1][0][1]/x[1][1]))).collect()
+        join_pairs_join = join_pairs_join.map(lambda x: (x[0], (float(x[1][0][0])/float(x[1][1]), float(x[1][0][1])/float(x[1][1])))).collect()
 
         end = time.time()
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
@@ -301,7 +301,7 @@ class Analyzer(object):
         # Loop over all the 'task_event' files and get the useful info from each one of them.
         for i in range(-1, 499):
             # Generate the next file_name to be processed
-            file_name = self.utils.get_next_file(i, 1)
+            file_name = self.utils.get_next_file(i, 499)
             print('Processing file: {}'.format(file_name))
             task_events_RDD = self.read_file(file_name)
 
@@ -337,8 +337,7 @@ class Analyzer(object):
         total_evicted_entries = self.sc.parallelize(list(total_evicted_entries.countByKey().items()))
 
         # Compute the percentage of evicted tasks, by computing the ratio betwen the #evicted and #tasks
-        combined_entries = total_evicted_entries.join(total_nb_entries_per_prio).map(lambda x: (x[0], x[1][0] / x[1][1])).collect()
-
+        combined_entries = total_evicted_entries.join(total_nb_entries_per_prio).map(lambda x: (x[0], float(x[1][0]) /float(x[1][1]))).collect()
         end = time.time()
 
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
@@ -453,7 +452,7 @@ class Analyzer(object):
 
         task_usage_counts = self.sc.parallelize(list(acc_task_usage.countByKey().items()))
         # Get the average for assigned_memory
-        average_usage = task_usage_sums.join(task_usage_counts).map(lambda x: (x[0], x[1][0] / x[1][1]))
+        average_usage = task_usage_sums.join(task_usage_counts).map(lambda x: (x[0], float(x[1][0]) /float( x[1][1])))
 
         # Joining the requested RAM by used_RAM
         join_req_and_used_mem = acc_tasks.join(average_usage)
@@ -520,7 +519,7 @@ class Analyzer(object):
         task_usage_counts = self.sc.parallelize(list(acc_task_usage.countByKey().items()))
 
         # Calculating the average of assigned_memory for each task
-        average_usage = task_usage_sums.join(task_usage_counts).map(lambda x: (x[0], x[1][0] / x[1][1]))
+        average_usage = task_usage_sums.join(task_usage_counts).map(lambda x: (x[0], float(x[1][0]) /float( x[1][1])))
 
         # Joining the tasks by average_usage RDD
         join_req_and_used_mem = acc_tasks.join(average_usage)
@@ -533,7 +532,7 @@ class Analyzer(object):
 
         count_keys = self.sc.parallelize(list(join_req_and_used_mem.countByKey().items()))
 
-        average_usage = sums_ram_for_prio.join(count_keys).map(lambda x: (x[0], x[1][0] / x[1][1])).collect()
+        average_usage = sums_ram_for_prio.join(count_keys).map(lambda x: (x[0], float(x[1][0]) /float( x[1][1]))).collect()
 
         end = time.time()
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
