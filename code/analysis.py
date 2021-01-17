@@ -47,7 +47,7 @@ class Analyzer(object):
         sc_conf.set('spark.driver.cores', DV_CORE)
         sc_conf.set('spark.driver.maxResultSize', DV_MAX+'M')
         sc_conf.set('spark.sql.autoBroadcastJoinThreshol','-1')
-        sc_conf.setMaster('local[*]')
+        # sc_conf.setMaster('local[*]')
 
         self.sc = SparkContext(param_nb_threads, conf=sc_conf)
         self.sc.setLogLevel("ERROR")
