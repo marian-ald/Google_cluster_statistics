@@ -245,7 +245,7 @@ class Utils(object):
             plt.text(value.get_x() + value.get_width()/2.,
                     1.002*height,'', ha='center', va='bottom')
         
-        plt.xticks(np.arange(min(labels), max(labels)+1, 2.0))
+        plt.xticks(np.arange(min(labels), max(labels)+1, 1.0))
         # Add labels and title
         plt.xlabel("Priority")
         plt.ylabel("Used RAM")
@@ -315,3 +315,7 @@ class Utils(object):
         plt.savefig('../plots/q11/q11_req_and_used_mem.png')        
 
         plt.show()
+
+
+# u = Utils()
+# u.plot_q8()
