@@ -162,7 +162,7 @@ class Utils(object):
             height = value.get_height()
             plt.text(value.get_x() + value.get_width()/2.,
                     1.002*height,'%.2f' % height, ha='center', va='bottom')
-        
+        plt.xticks(np.arange(min(labels), max(labels)+1, 1.0))
         # Add labels and title
         plt.xlabel("Task priority")
         plt.ylabel("Evict probability")
