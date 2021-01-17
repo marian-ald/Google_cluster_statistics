@@ -517,7 +517,9 @@ class Analyzer(object):
             # From the task_usage RDD, create pairs of job_ID and task_index, assigned_memory for each entry
             task_pairs = task_usage_RDD.map(lambda x: ((int(x[task_usage_f['job_ID']]), int(x[task_usage_f['task_index']])), float(x[task_usage_f['assigned_RAM']])))
 
-            acc_task_usage = acc_task_usage.union(task_pairs)
+            acc_task_usage = task_pairs.distinct()
+
+            acc_task_usage = acc_task_usage.union(acc_task_usage)
 
         acc_task_usage = acc_task_usage.collect()
         acc_task_usage = self.sc.parallelize(acc_task_usage)
