@@ -44,7 +44,7 @@ class Analyzer(object):
         sc_conf.set('spark.executor.memory', EXE_MEMORY+'M')
         sc_conf.set('spark.executor.cores', EXE_CORE)
         sc_conf.set('spark.driver.memory', DV_MEMOTY+'M')
-        sc_conf.set('spark.executor.instances', 1)
+        sc_conf.set('spark.executor.instances', 4)
         sc_conf.set('spark.driver.cores', DV_CORE)
         sc_conf.set('spark.driver.maxResultSize', DV_MAX+'M')
         sc_conf.set('spark.sql.autoBroadcastJoinThreshol','-1')
@@ -365,7 +365,7 @@ class Analyzer(object):
         acc_tasks = self.sc.parallelize([])
         start = time.time()
 
-        for i in range(-1, 499):
+        for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
@@ -381,14 +381,12 @@ class Analyzer(object):
             acc_tasks = acc_tasks.union(acc_tasks)
 
             # Keep an unique occurrence of each entry(remove the duplicates)
-            if (i + 2) % 100 == 0:
+            if (i + 2) % int(PERCENTAGE) == 0:
                 acc_tasks = acc_tasks.distinct().collect()
 
                 acc_tasks = self.sc.parallelize(acc_tasks)
 
-            # acc_tasks = set(acc_tasks)
-            # acc_tasks = self.sc.parallelize(acc_tasks)
-        
+
         # Count on how many machines the tasks from a job are runnning
         machines_for_a_job = self.sc.parallelize(list(acc_tasks.countByKey().items()))
 
@@ -396,10 +394,20 @@ class Analyzer(object):
         # The pairs have the following form: (number_of_different_machines, number of jobs).
         # Each job is running on number_of_different_machines machines.
         nb_jobs_on_nb_machines = machines_for_a_job.map(lambda x: (x[1],1)).reduceByKey(lambda x, y: x+y).collect()
+
+        para_nb_jobs_on_nb_machines = self.sc.parallelize(nb_jobs_on_nb_machines)
+        # Compute weighted average of the machines and jobs, in order to obtain on how many machines a job runs
+        # in average
+        weighted_sum = para_nb_jobs_on_nb_machines.map(lambda x: x[0] * x[1]).reduce(lambda x, y: x+y)
+        sum_jobs = para_nb_jobs_on_nb_machines.map(lambda x: x[1]).reduce(lambda x, y: x+y)
+
+        weighted_average =  weighted_sum/sum_jobs
+
         end = time.time()
 
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
         self.utils.dump_in_file(nb_jobs_on_nb_machines, self.nb_q)
+        self.utils.dump_in_file("weighted_average = {}".format(weighted_average), self.nb_q)
         self.utils.save_object(nb_jobs_on_nb_machines, 6, 'jobs_per_dif_machines')
 
 

@@ -181,30 +181,34 @@ class Utils(object):
         # We are expecting the data to have the following format:
         #       [(j, (mean_task_class, mean_task_priority))]
 
+        # data.remove((10254, 1))
+        # data.remove((4, 851))
         data.sort(key=lambda tup: tup[0])
 
-        data = data[:15]
+        # data = data[:15]
         print(data)
 
         labels = [x[0] for x in data]
         y_evict_prob = [x[1] for x in data]
         
-        plot = plt.bar(labels, y_evict_prob, width=0.5)
+        plt.scatter(labels, y_evict_prob, color='red', s=13, alpha = 0.6)
+
+        # plot = plt.bar(labels, y_evict_prob, width=0.5)
         
-        # Add the data value on head of the bar
-        for value in plot:
-            height = value.get_height()
-            plt.text(value.get_x() + value.get_width()/2.,
-                    1.002*height,'', ha='center', va='bottom')
+        # # Add the data value on head of the bar
+        # for value in plot:
+        #     height = value.get_height()
+        #     plt.text(value.get_x() + value.get_width()/2.,
+        #             1.002*height,'', ha='center', va='bottom')
         
-        plt.xticks(np.arange(min(labels), max(labels)+1, 2.0))
+        # plt.xticks(np.arange(min(labels), max(labels)+1, 2.0))
         # Add labels and title
         plt.xlabel("Jobs")
         plt.ylabel("Machines")
         plt.savefig('../plots/q6/q6_jobs_per_dif_machines.png')        
 
         # Display the graph on the screen
-        # plt.show()
+        plt.show()
     
 
     def plot_q7(self):
@@ -318,4 +322,4 @@ class Utils(object):
 
 
 # u = Utils()
-# u.plot_q8()
+# u.plot_q7()
