@@ -600,7 +600,7 @@ class Analyzer(object):
             task_pairs = task_pairs.filter(lambda x: x[1] == EVICT)
 
             # Calculating the time_stamps as an index of interval by dividing each timestamps by 300 000 000
-            task_pairs = task_pairs.map(lambda x: (int((x[0] - 6*10**8) / (3*10**8)), x[1]))
+            task_pairs = task_pairs.map(lambda x: (int((x[0] - 6*10**8) / (5*3*10**8)), x[1]))
 
             acc_tasks = acc_tasks.union(task_pairs)
 
@@ -629,7 +629,7 @@ class Analyzer(object):
             task_usage_pairs = task_usage_RDD.map(lambda x: (int(x[task_usage_f['time_start']]), float(x[task_usage_f['assigned_RAM']])))
 
             # Calculating the time_start as an index of interval by dividing each time_start by 300 000 000
-            task_usage_pairs = task_usage_pairs.map(lambda x: (int((x[0] - 6*10**8) / (3*10**8)), x[1]))
+            task_usage_pairs = task_usage_pairs.map(lambda x: (int((x[0] - 6*10**8) / (5*3*10**8)), x[1]))
 
             # count_keys = self.sc.parallelize(list(task_usage_pairs.countByKey().items()))
     

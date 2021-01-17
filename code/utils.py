@@ -181,10 +181,11 @@ class Utils(object):
         # We are expecting the data to have the following format:
         #       [(j, (mean_task_class, mean_task_priority))]
 
-        # data.remove((10254, 1))
-        # data.remove((4, 851))
+        data.remove((311226, 1))
+        data.remove((4, 1193))
         data.sort(key=lambda tup: tup[0])
 
+    
         # data = data[:15]
         print(data)
 
@@ -203,8 +204,8 @@ class Utils(object):
         
         # plt.xticks(np.arange(min(labels), max(labels)+1, 2.0))
         # Add labels and title
-        plt.xlabel("Jobs")
-        plt.ylabel("Machines")
+        plt.xlabel("Machines")
+        plt.ylabel("Jobs")
         plt.savefig('../plots/q6/q6_jobs_per_dif_machines.png')        
 
         # Display the graph on the screen
@@ -322,4 +323,4 @@ class Utils(object):
 
 
 # u = Utils()
-# u.plot_q7()
+# u.plot_q5()
