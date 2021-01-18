@@ -13,7 +13,7 @@ if __name__ == '__main__':
     analysis.NUM_FILES= sys.argv[4]
     analysis.PERCENTAGE= sys.argv[5]
 
-    
+    analysis.CORE= sys.argv[3]
     analyzer = Analyzer(sys.argv[3])
     
     getattr(analyzer,'question'+sys.argv[1])()

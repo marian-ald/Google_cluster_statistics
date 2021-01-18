@@ -6,6 +6,7 @@ from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
 
 MEMORY= 0
+CORE=0
 # EXE_CORE= 0
 # DV_MEMORY= 0
 # DV_CORE= 0
@@ -60,7 +61,7 @@ class Analyzer(object):
         # print('spark.executor.cores = {}'.format(a))
 
         # sys.exit()
-        self.utils.format_output_files()
+        # self.utils.format_output_files()
 
         # Number of the current question
         self.nb_q = 1
@@ -98,7 +99,8 @@ class Analyzer(object):
         distribution = uniques_machines.map(lambda x: (x[0], 1)).reduceByKey(add).collect()
 
         end = time.time()
-
+        
+        self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)
         self.utils.dump_in_file(distribution, self.nb_q)
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
         # self.uncache(machine_ev)
@@ -148,7 +150,7 @@ class Analyzer(object):
 
         end = time.time()
 
-
+        self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
         self.utils.dump_in_file('Percentage time UP = {}'.format(sum_final/total), self.nb_q)
         self.utils.dump_in_file('Percentage time DOWN = {}'.format(1 - sum_final/total), self.nb_q)
@@ -202,7 +204,7 @@ class Analyzer(object):
         # Mean = no_tasks/no_jobs
         average = float(number_tasks)/float(number_jobs)
         end = time.time()
-
+        self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
         self.utils.dump_in_file('Average number of tasks/job: {}'.format(float(average)), self.nb_q)
 
@@ -289,6 +291,7 @@ class Analyzer(object):
         join_pairs_join = join_pairs_join.map(lambda x: (x[0], (float(x[1][0][0])/float(x[1][1]), float(x[1][0][1])/float(x[1][1])))).collect()
 
         end = time.time()
+        self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)        
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
         self.utils.dump_in_file(join_pairs_join, self.nb_q)
 
@@ -353,7 +356,7 @@ class Analyzer(object):
         evict_probab = join_evicted_no_tasks.map(lambda x: (x[0], float(x[1][1])/float(x[1][0]))).collect()
         print(evict_probab)
         end = time.time()
-
+        self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
         self.utils.dump_in_file(evict_probab, self.nb_q)
 
@@ -409,7 +412,7 @@ class Analyzer(object):
         weighted_average =  weighted_sum/sum_jobs
 
         end = time.time()
-
+        self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
         self.utils.dump_in_file(nb_jobs_on_nb_machines, self.nb_q)
         self.utils.dump_in_file("weighted_average = {}".format(weighted_average), self.nb_q)
@@ -489,6 +492,7 @@ class Analyzer(object):
         print(req_and_used_mem[:5])
 
         end = time.time()
+        self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)        
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
         self.utils.dump_in_file(req_and_used_mem, self.nb_q)
         self.utils.save_object(req_and_used_mem, 7, 'req_and_used_mem')
@@ -575,6 +579,7 @@ class Analyzer(object):
         average_usage = sums_ram_for_prio.join(count_keys).map(lambda x: (x[0], float(x[1][0]) /float( x[1][1]))).collect()
 
         end = time.time()
+        self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)        
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
         self.utils.dump_in_file(average_usage, self.nb_q)
         self.utils.save_object(average_usage, 8, 'used_ram_per_prio')
@@ -651,7 +656,7 @@ class Analyzer(object):
         print(mem_sums_per_interval[:10])
 
         end = time.time()
-
+        self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
         # self.utils.dump_in_file(mem_sums_per_interval, self.nb_q)
         self.utils.save_object(mem_sums_per_interval, 9, 'ram_per_time_interv')
@@ -675,7 +680,7 @@ class Analyzer(object):
         distribution = uniques_machines.map(lambda x: (x[0], 1)).reduceByKey(add).collect()
 
         end = time.time()
-
+        self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)
         self.utils.dump_in_file(distribution, self.nb_q)
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
 
@@ -698,7 +703,7 @@ class Analyzer(object):
         distribution = uniques_machines.map(lambda x: (x[0], 1)).reduceByKey(add).collect()
 
         end = time.time()
-
+        self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)
         self.utils.dump_in_file(distribution, self.nb_q)
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
         self.utils.save_object(distribution, 11, 'cpu_ram_distribution')
