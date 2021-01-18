@@ -60,7 +60,7 @@ class Analyzer(object):
         # print('spark.executor.cores = {}'.format(a))
 
         # sys.exit()
-        # self.utils.format_output_files()
+        self.utils.format_output_files()
 
         # Number of the current question
         self.nb_q = 1
