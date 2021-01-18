@@ -303,56 +303,61 @@ class Analyzer(object):
         self.nb_q = 5
 
         # Accumulator for the information from all 500 task events files
-        acc_tasks = self.sc.parallelize([])
+        global_ev_prio_pairs_acc = self.sc.parallelize([])
+        ev_prio_pairs_acc = self.sc.parallelize([])
+
+        no_tasks_pairs_acc = self.sc.parallelize([])
+
         start = time.time()
 
         # Loop over all the 'task_event' files and get the useful info from each one of them.
-        for i in range(-1, 499):
+        for i in range(-1, int(NUM_FILES)):
             # Generate the next file_name to be processed
             file_name = self.utils.get_next_file(i, 1)
             print('Processing file: {}'.format(file_name))
             task_events_RDD = self.read_file(file_name)
 
             # From the task_events RDD, create tuples of: task_index, priority, and event_type
-            job_pairs = task_events_RDD.map(lambda x: (int(x[task_ev_f['task_index']]), (int(x[task_ev_f['priority']]), int(x[task_ev_f['event_type']]))))
+            # job_pairs = task_events_RDD.map(lambda x: (int(x[task_ev_f['job_ID']]), int(x[task_ev_f['task_index']]), int(x[task_ev_f['priority']]), int(x[task_ev_f['event_type']])))
+
+            # Evicted events/priority
+            ev_prio_pairs = task_events_RDD.map(lambda x: (int(x[task_ev_f['priority']]), int(x[task_ev_f['event_type']])))
+            no_tasks_pairs = task_events_RDD.map(lambda x: (int(x[task_ev_f['priority']]), int(x[task_ev_f['job_ID']]), int(x[task_ev_f['task_index']])))
 
             # Concatenate the tuples of the current file to the accumulator
-            acc_tasks = acc_tasks.union(job_pairs)
+            ev_prio_pairs_acc = ev_prio_pairs_acc.union(ev_prio_pairs)
+            no_tasks_pairs_acc = no_tasks_pairs_acc.union(no_tasks_pairs)
 
             # Keep an unique occurrence of each entry(remove the duplicates)
-            if (i + 2) % 100 == 0:
-                acc_tasks = acc_tasks.distinct().collect()
-                # Load the previous result in an RDD
-                acc_tasks = self.sc.parallelize(acc_tasks)
+            if (i + 2) % int(PERCENTAGE) == 0:
+                # For a certain key(task_index), keep only the task entry that has 'EVICT' event type
+                ev_prio_pairs_acc = ev_prio_pairs_acc.filter(lambda x: x[1] == EVICT).map(lambda x: (x[0], 1)).reduceByKey(lambda x, y: x+y).collect()
+                ev_prio_pairs_acc = self.sc.parallelize(ev_prio_pairs_acc)
+                global_ev_prio_pairs_acc = global_ev_prio_pairs_acc.union(ev_prio_pairs_acc)
+                ev_prio_pairs_acc = self.sc.parallelize([])
 
+                no_tasks_pairs_acc = no_tasks_pairs_acc.distinct().collect()
+                no_tasks_pairs_acc = self.sc.parallelize(no_tasks_pairs_acc)
             # acc_tasks = set(acc_tasks)
             # acc_tasks = self.sc.parallelize(acc_tasks)
-        acc_tasks = acc_tasks.distinct().collect()
-        acc_tasks = self.sc.parallelize(acc_tasks)
+        # acc_tasks = acc_tasks.distinct().collect()
+        # no_tasks_pairs_acc = self.sc.parallelize(no_tasks_pairs_acc)
+        global_ev_prio_pairs_acc = global_ev_prio_pairs_acc.reduceByKey(lambda x, y: x+y)
 
-        # For a certain key(task_index), keep only the task entry that has 'EVICT' event type
-        # If none of them has the 'EVICT' type, keep any
-        task_pairs = acc_tasks.reduceByKey(lambda x, y: compare(x,y))
-
-        # Remove the 'task_index' from the tuple
-        total_nb_entries_per_prio = task_pairs.map(lambda x: (x[1][0], x[1][1]))
-
-        # Count how many tasks exist with a certain priority
-        total_nb_entries_per_prio = self.sc.parallelize(list(total_nb_entries_per_prio.countByKey().items()))
+        no_tasks_pairs_acc = no_tasks_pairs_acc.map(lambda x: (x[0], 1)).reduceByKey(lambda x, y: x+y)
 
         # Count how many EVICT task exist with a certain priority
-        total_evicted_entries = task_pairs.filter(lambda x: x[1][1] == EVICT).map(lambda x: (x[1][0],x[1][1]))
-        total_evicted_entries = self.sc.parallelize(list(total_evicted_entries.countByKey().items()))
+        join_evicted_no_tasks = no_tasks_pairs_acc.join(global_ev_prio_pairs_acc)
 
         # Compute the percentage of evicted tasks, by computing the ratio betwen the #evicted and #tasks
-        combined_entries = total_evicted_entries.join(total_nb_entries_per_prio).map(lambda x: (x[0], float(x[1][0]) /float(x[1][1]))).collect()
+        evict_probab = join_evicted_no_tasks.map(lambda x: (x[0], float(x[1][1])/float(x[1][0]))).collect()
+        print(evict_probab)
         end = time.time()
 
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
-        self.utils.dump_in_file(combined_entries, self.nb_q)
+        self.utils.dump_in_file(evict_probab, self.nb_q)
 
-        self.utils.save_object(combined_entries, 5, 'evict_probab')
-
+        self.utils.save_object(evict_probab, 5, 'evict_probab')
 
     def question6(self):
         """
