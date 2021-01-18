@@ -350,7 +350,7 @@ class Analyzer(object):
         join_evicted_no_tasks = no_tasks_pairs_acc.join(global_ev_prio_pairs_acc)
 
         # Compute the percentage of evicted tasks, by computing the ratio betwen the #evicted and #tasks
-        evict_probab = join_evicted_no_tasks.map(lambda x: (x[0], x[1][1]/x[1][0])).collect()
+        evict_probab = join_evicted_no_tasks.map(lambda x: (x[0], float(x[1][1])/float(x[1][0]))).collect()
         print(evict_probab)
         end = time.time()
 
