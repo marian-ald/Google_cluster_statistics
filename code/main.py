@@ -4,17 +4,17 @@ import sys
 
 if __name__ == '__main__':
         
-    analysis.EXE_MEMORY= sys.argv[2]
-    analysis.EXE_CORE= sys.argv[3]
-    analysis.DV_MEMOTY= sys.argv[4]
-    analysis.DV_CORE= sys.argv[5]
-    analysis.DV_MAX= sys.argv[6]
+    analysis.MEMORY= sys.argv[2]
+    # analysis.EXE_CORE= sys.argv[3]
+    # analysis.DV_MEMORY= sys.argv[4]
+    # analysis.DV_CORE= sys.argv[5]
+    # analysis.DV_MAX= sys.argv[6]
 
-    analysis.NUM_FILES= sys.argv[7]
-    analysis.PERCENTAGE= sys.argv[8]
+    analysis.NUM_FILES= sys.argv[4]
+    analysis.PERCENTAGE= sys.argv[5]
 
     
-    analyzer = Analyzer(8)
+    analyzer = Analyzer(sys.argv[3])
     
     getattr(analyzer,'question'+sys.argv[1])()
 

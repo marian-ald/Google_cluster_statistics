@@ -5,11 +5,11 @@ import time
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
 
-EXE_MEMORY= 0
-EXE_CORE= 0
-DV_MEMOTY= 0
-DV_CORE= 0
-DV_MAX= 0
+MEMORY= 0
+# EXE_CORE= 0
+# DV_MEMORY= 0
+# DV_CORE= 0
+# DV_MAX= 0
 
 NUM_FILES= 0
 PERCENTAGE= 0
@@ -41,12 +41,12 @@ class Analyzer(object):
         param_nb_threads = 'local[{}]'.format(nb_threads)
         sc_conf = SparkConf()
 
-        sc_conf.set('spark.executor.memory', EXE_MEMORY+'M')
-        sc_conf.set('spark.executor.cores', EXE_CORE)
-        sc_conf.set('spark.driver.memory', DV_MEMOTY+'M')
+        sc_conf.set('spark.executor.memory', MEMORY+'M')
+        # sc_conf.set('spark.executor.cores', EXE_CORE)
+        sc_conf.set('spark.driver.memory', MEMORY+'M')
         sc_conf.set('spark.executor.instances', 4)
-        sc_conf.set('spark.driver.cores', DV_CORE)
-        sc_conf.set('spark.driver.maxResultSize', DV_MAX+'M')
+        # sc_conf.set('spark.driver.cores', DV_CORE)
+        sc_conf.set('spark.driver.maxResultSize', MEMORY+'M')
         sc_conf.set('spark.sql.autoBroadcastJoinThreshol','-1')
         # sc_conf.setMaster('local[*]')
 
