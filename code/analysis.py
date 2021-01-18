@@ -329,7 +329,7 @@ class Analyzer(object):
             no_tasks_pairs_acc = no_tasks_pairs_acc.union(no_tasks_pairs)
 
             # Keep an unique occurrence of each entry(remove the duplicates)
-            if (i + 2) % 2 == 0:
+            if (i + 2) % int(PERCENTAGE) == 0:
                 # For a certain key(task_index), keep only the task entry that has 'EVICT' event type
                 ev_prio_pairs_acc = ev_prio_pairs_acc.filter(lambda x: x[1] == EVICT).map(lambda x: (x[0], 1)).reduceByKey(lambda x, y: x+y).collect()
                 ev_prio_pairs_acc = self.sc.parallelize(ev_prio_pairs_acc)
