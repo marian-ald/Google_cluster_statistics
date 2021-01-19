@@ -1,4 +1,11 @@
+Question 3
 Total number of jobs: 672004
 Total number of tasks: 25424731
-Time: 379.691854
+Core_num: 4
+Time: 664.296690941
+Average number of tasks/job: 37.8341959274
+Total number of jobs: 672004
+Total number of tasks: 25424731
+Core_num: 8
+Time: 396.689378023
 Average number of tasks/job: 37.8341959274

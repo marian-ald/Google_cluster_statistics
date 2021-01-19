@@ -1,1 +1,9 @@
 Question 2
+Core_num: 4
+Time: 2.94579696655
+Percentage time UP = 0
+Percentage time DOWN = 1
+Core_num: 8
+Time: 3.07276701927
+Percentage time UP = 0
+Percentage time DOWN = 1
