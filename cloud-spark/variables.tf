@@ -15,7 +15,7 @@ variable "instanceName" {
 }
 
 variable "deployKeyName" {
-  default = "spark-service-project.json"
+  default = "deployment-key-spark.json"
 }
 
 variable "machineCount" {

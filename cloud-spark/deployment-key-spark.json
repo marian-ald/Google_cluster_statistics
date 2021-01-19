@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "solid-garden-302208",
+  "private_key_id": "68e059ed3e28c7dd9f49f1beeaec0844c8017d33",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCbeyOSh4OmZQqe\nSFDMem4CX5L4ogNgK13L3MNCJ7r4tXhenDPmEoDu7XTlb2gQsfyrW5Uaa27JQrkt\nyPvRm7UXdjTYlgJIfdn2AHVSeqatMKSC9KvVPGyl7BE8QK6iv9R940GDmtXqkHJZ\n/QTgxBrNVL7Es/MX0mzNLh9F9UKfD0JkqVqr7kmN0EcAuxSFQd4aip9vYK93K0pJ\nMozrJ1U8mn3PWVC+jrs1aRgAJgRsuVvsl4P5TnG3DEzQQOaXICFlWGcVIWMYg3wO\nl8Z23m07jrN5Hs7k4LiijmkzmWdn8YRf/9ahfdPQ/RyVkuhAm9oHPbmEOCwSraD9\niaQ/zC3HAgMBAAECggEAE5EGE4EhVLXfhbbVED6SDJNphAejhB1BAxBHtFIaqgTw\nXnuq3lfSyP6yGNOR1ZQIl6oBVB9UBFj0w+nIowLE4ex6zwzlwaiw3tAE87nCswXt\nlhtjaoTdqW3RZ3M+ZvXcMHGCg6TfKdM+yMtaK00SkGeLUGbS/1r4XUPiJKQuW6TW\nGY+YN9SfMDSFLnWk99EJ/GwRPvKVySK1/1FXLKJAI/ltztcgrJDah1wkW7FENato\nZyO71UR9ntNFOV8RCCUqYzfOEn5kGiI/6nrAlqK2hOXD84ED9QsUwZ/mwv7JItDe\na+czxMF+VyqpnVEW5ogIohHAS4cqJIhTog1xU/+wZQKBgQDXePzwZzMk6GSjZ7Wo\nWGRcA0zH4XaxFfInQFpSkXMm348f05pTlk06sT3WwrtcfUd8nuQER+ptmkzlMYZV\nRq/iY5Pa7SzhIGNZFtRWSSO79pcOhjPH5k81nPnRyqSWcobYuO6fFnZEzXTlP6f5\nx9nDTIxKJeSJRzhDe21GqD1aEwKBgQC4uY3JKMDybeZD00nCO+tXrR16V3XKDjUk\n5WMFsTz272EDLxJ8OlHzO3/spXU2aNpdfnXW2jafvE+JP0XMm+fHbhcimKVafGfm\nG3wjS/fV/Gc4pJsd5l8r7vqHhVc1QqSxH2eEfeg4mCJ1kiTYSkNBY+DuFFRMR+27\nbDHFa/JT/QKBgQC9idbt3cnWcHp+Zu8by81URy7WMJVIxuZA8tHBCeMCUetDcs6x\nMmhy9ZBRBvDrNeSZUed/gIdNrEpx3fOttcVn3nIkRTeSPPxHVNappCLD5/EOvKx1\n7jjFD3WNvrSzBsFpiJuW45pbgWOPeURYax06N268lsKGo1hxu/PvEHUPcwKBgHG8\nFXdYd0wMrGzwR4am2+UUuoScGvL4QnJgJdLYaJ/ljUankesZAWIQLVhoGz4P2vsb\npLRPkLhS+mmXooMzLscUmnv7njuTQ2ljXNBissp26Jrwhm0nbUugjXIpgCNT0BEa\nM+NYnkVSLk1TWQou1zAIrfIIZEq/MrlmCVLzfrWFAoGAKcRo3lw1ikExGTRReIJF\nWaFhFCQE5wGPP3T7/n0jlFnL+AatUynOVd3RZuY2wlfV6BDu7/YrSpcj4wOsjnEb\nJlnKgRyvcohGe+nZIf18acvWj9mGWAY+UVSe1pGHgn/GC8lxRcwuwCANHYXZV8Um\nlXGfO+6hmCBV8cKIUy2HnFQ=\n-----END PRIVATE KEY-----\n",
+  "client_email": "deployment-key-spark@solid-garden-302208.iam.gserviceaccount.com",
+  "client_id": "108595928683534335481",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/deployment-key-spark%40solid-garden-302208.iam.gserviceaccount.com"
+}

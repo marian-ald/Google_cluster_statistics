@@ -26,7 +26,7 @@ with open('hosts', 'w') as host_file:
     host_file.write(IPs[0]+'\n')
     host_file.write('\n')
     
-    host_file.write('[spark_nodes]\n')
+    host_file.write('[mpi_nodes]\n')
     for IP in IPs:
         host_file.write(IP+'\n')
 
@@ -36,6 +36,6 @@ with open('hosts', 'w') as host_file:
     host_file.write('ansible_ssh_common_args=\'-o StrictHostKeyChecking=no\'\n')
     
 
-with open('hostfile_spark', 'w') as spark_file:
+with open('hostfile_mpi', 'w') as mpi_file:
     for host in hostnames:
-        spark_file.write(host+'\n')
+        mpi_file.write(host+'\n')
