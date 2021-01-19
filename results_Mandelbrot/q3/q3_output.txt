@@ -1,0 +1,13 @@
+Question 3
+Mandelbrot results::
+Total number of jobs: 672004
+Total number of tasks: 25424731
+Core_num: 4
+Time: 694.076259136
+Average number of tasks/job: 37.8341959274
+Mandelbrot results::
+Total number of jobs: 672004
+Total number of tasks: 25424731
+Core_num: 8
+Time: 397.635203838
+Average number of tasks/job: 37.8341959274

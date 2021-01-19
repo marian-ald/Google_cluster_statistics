@@ -1,0 +1,7 @@
+Question 9
+Mandelbrot results::
+Core_num: 4
+Time: 292.219296932
+Mandelbrot results::
+Core_num: 8
+Time: 214.215365887

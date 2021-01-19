@@ -1,0 +1,9 @@
+Question 1
+Mandelbrot results::
+Core_num: 4
+[(u'1', 798), (u'', 32), (u'0.5', 11659), (u'0.25', 126)]
+Time: 2.93051505089
+Mandelbrot results::
+Core_num: 8
+[(u'1', 798), (u'', 32), (u'0.5', 11659), (u'0.25', 126)]
+Time: 2.50665092468

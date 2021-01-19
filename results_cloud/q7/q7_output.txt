@@ -1,0 +1,7 @@
+Question 7
+Cloud results::
+Core_num: 4
+Time: 2539.79654193
+Cloud results::
+Core_num: 8
+Time: 2344.00198197

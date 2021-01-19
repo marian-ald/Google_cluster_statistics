@@ -1,0 +1,7 @@
+Question 9
+Cloud results::
+Core_num: 4
+Time: 245.410877943
+Cloud results::
+Core_num: 8
+Time: 220.513027906

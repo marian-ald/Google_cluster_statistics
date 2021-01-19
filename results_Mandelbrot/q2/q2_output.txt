@@ -1,0 +1,11 @@
+Question 2
+Mandelbrot results::
+Core_num: 4
+Time: 2.69364190102
+Percentage time UP = 0
+Percentage time DOWN = 1
+Mandelbrot results::
+Core_num: 8
+Time: 2.95252203941
+Percentage time UP = 0
+Percentage time DOWN = 1

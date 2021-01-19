@@ -1,0 +1,11 @@
+Question 2
+Cloud results::
+Core_num: 4
+Time: 2.35543990135
+Percentage time UP = 0
+Percentage time DOWN = 1
+Cloud results::
+Core_num: 8
+Time: 2.11185407639
+Percentage time UP = 0
+Percentage time DOWN = 1

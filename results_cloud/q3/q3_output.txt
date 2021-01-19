@@ -1,0 +1,13 @@
+Question 3
+Cloud results::
+Total number of jobs: 672004
+Total number of tasks: 25424731
+Core_num: 4
+Time: 665.802509069
+Average number of tasks/job: 37.8341959274
+Cloud results::
+Total number of jobs: 672004
+Total number of tasks: 25424731
+Core_num: 8
+Time: 464.452656984
+Average number of tasks/job: 37.8341959274
