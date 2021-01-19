@@ -1,8 +1,8 @@
-from utils import *
+# from utils import *
 import os
 
-utils = Utils()
-utils.format_output_files()
+# utils = Utils()
+# utils.format_output_files()
 os.system('python main.py 1 32768 4 0 0')
 os.system('python main.py 2 32768 4 0 0')
 os.system('python main.py 3 32768 4 0 0')
