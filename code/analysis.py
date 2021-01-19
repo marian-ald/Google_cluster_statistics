@@ -7,10 +7,6 @@ from pyspark.sql import SparkSession
 
 MEMORY= 0
 CORE=0
-# EXE_CORE= 0
-# DV_MEMORY= 0
-# DV_CORE= 0
-# DV_MAX= 0
 
 NUM_FILES= 0
 PERCENTAGE= 0
@@ -43,10 +39,10 @@ class Analyzer(object):
         sc_conf = SparkConf()
 
         sc_conf.set('spark.executor.memory', MEMORY+'M')
-        # sc_conf.set('spark.executor.cores', EXE_CORE)
+        # sc_conf.set('spark.executor.cores', '')
         sc_conf.set('spark.driver.memory', MEMORY+'M')
         sc_conf.set('spark.executor.instances', 4)
-        # sc_conf.set('spark.driver.cores', DV_CORE)
+        # sc_conf.set('spark.driver.cores', '')
         sc_conf.set('spark.driver.maxResultSize', MEMORY+'M')
         sc_conf.set('spark.sql.autoBroadcastJoinThreshol','-1')
         # sc_conf.setMaster('local[*]')
@@ -469,8 +465,8 @@ class Analyzer(object):
         self.utils.dump_in_file("Cloud results::", self.nb_q)
         self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)        
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
-        self.utils.dump_in_file(req_and_used_mem, self.nb_q)
-        self.utils.save_object(req_and_used_mem, 7, 'req_and_used_mem')
+        # self.utils.dump_in_file(req_and_used_mem, self.nb_q)
+        # self.utils.save_object(req_and_used_mem, 7, 'req_and_used_mem')
 
 
     def question8(self):
