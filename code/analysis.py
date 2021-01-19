@@ -99,7 +99,7 @@ class Analyzer(object):
         distribution = uniques_machines.map(lambda x: (x[0], 1)).reduceByKey(add).collect()
 
         end = time.time()
-        
+        self.utils.dump_in_file("Cloud results::", self.nb_q)
         self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)
         self.utils.dump_in_file(distribution, self.nb_q)
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
@@ -149,7 +149,7 @@ class Analyzer(object):
         sum_final = sum_final / len(last_events.collect())
 
         end = time.time()
-
+        self.utils.dump_in_file("Cloud results::", self.nb_q)
         self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
         self.utils.dump_in_file('Percentage time UP = {}'.format(sum_final/total), self.nb_q)
@@ -164,7 +164,7 @@ class Analyzer(object):
         """    
         print('\nQuestion 3')
         self.nb_q = 3
-
+        
         # Accumulator for the information from all 500 task events files
         acc = self.sc.parallelize([])
         start = time.time()
@@ -193,6 +193,7 @@ class Analyzer(object):
         # Count how many tasks exist for each job
         no_tasks_for_a_job = acc.map(lambda x: (x[0],1)).reduceByKey(lambda x, y: x+y)
 
+        self.utils.dump_in_file("Cloud results::", self.nb_q)
         # Compute the total number of jobs
         number_jobs = no_tasks_for_a_job.count()
         self.utils.dump_in_file('Total number of jobs: {}'.format(number_jobs), self.nb_q)
@@ -291,6 +292,7 @@ class Analyzer(object):
         join_pairs_join = join_pairs_join.map(lambda x: (x[0], (float(x[1][0][0])/float(x[1][1]), float(x[1][0][1])/float(x[1][1])))).collect()
 
         end = time.time()
+        self.utils.dump_in_file("Cloud results::", self.nb_q)
         self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)        
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
         self.utils.dump_in_file(join_pairs_join, self.nb_q)
@@ -356,6 +358,8 @@ class Analyzer(object):
         evict_probab = join_evicted_no_tasks.map(lambda x: (x[0], float(x[1][1])/float(x[1][0]))).collect()
         print(evict_probab)
         end = time.time()
+
+        self.utils.dump_in_file("Cloud results::", self.nb_q)
         self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
         self.utils.dump_in_file(evict_probab, self.nb_q)
@@ -412,6 +416,8 @@ class Analyzer(object):
         weighted_average =  weighted_sum/sum_jobs
 
         end = time.time()
+
+        self.utils.dump_in_file("Cloud results::", self.nb_q)
         self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
         self.utils.dump_in_file(nb_jobs_on_nb_machines, self.nb_q)
@@ -492,6 +498,8 @@ class Analyzer(object):
         print(req_and_used_mem[:5])
 
         end = time.time()
+
+        self.utils.dump_in_file("Cloud results::", self.nb_q)
         self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)        
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
         self.utils.dump_in_file(req_and_used_mem, self.nb_q)
@@ -579,6 +587,8 @@ class Analyzer(object):
         average_usage = sums_ram_for_prio.join(count_keys).map(lambda x: (x[0], float(x[1][0]) /float( x[1][1]))).collect()
 
         end = time.time()
+
+        self.utils.dump_in_file("Cloud results::", self.nb_q)
         self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)        
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
         self.utils.dump_in_file(average_usage, self.nb_q)
@@ -656,6 +666,8 @@ class Analyzer(object):
         print(mem_sums_per_interval[:10])
 
         end = time.time()
+
+        self.utils.dump_in_file("Cloud results::", self.nb_q)
         self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
         # self.utils.dump_in_file(mem_sums_per_interval, self.nb_q)

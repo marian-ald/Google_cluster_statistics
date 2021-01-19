@@ -77,8 +77,6 @@ class Utils(object):
     def dump_in_file(self, string, nb_question):
         file_path = '../results/q{}/q{}_output.txt'.format(nb_question, nb_question)
         with open(file_path, 'a') as out_file:
-            out_file.write('Cloud Results::')
-            out_file.write('\n')
             string = str(string)
             out_file.write(string)
             out_file.write('\n')
