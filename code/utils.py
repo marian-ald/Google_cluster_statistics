@@ -8,18 +8,6 @@ import math
 import sys
 
 
-def compare(x, y):
-    """
-    docstring
-    """
-    if x == y:
-        return x
-    elif x[1] == 'E':  
-        return x
-    elif y[1] == 'E':  
-        return y
-    else:
-        return x
 
 class Utils(object):
     """
@@ -28,24 +16,12 @@ class Utils(object):
     """
 
     def __init__(self):
-        # Create a new Spark context
-        # param_nb_threads = 'local[{}]'.format(nb_threads)
-        # self.sc = SparkContext(param_nb_threads)
-        # self.sc.setLogLevel("ERROR")
-        pass
-
-    def read_file(self, file):
-        """
-        docstring
-        """
-        # wholeFile = self.sc.textFile(file)
-        # return wholeFile
         pass
 
 
     def get_next_file(self, i, file_type):
         """
-        docstring
+        Return a formated path of the next file to be processed
         """
         i += 1
         file_no = ''
@@ -75,6 +51,9 @@ class Utils(object):
 
 
     def dump_in_file(self, string, nb_question):
+        """
+        Print a formated string in the output file for a certain question
+        """
         file_path = '../results/q{}/q{}_output.txt'.format(nb_question, nb_question)
         with open(file_path, 'a') as out_file:
             string = str(string)
@@ -102,10 +81,9 @@ class Utils(object):
 
     def plot_q4(self):
         """
-        docstring
+        Plot visualization for Q4
         """
         data = self.load_object(4, 'class_prio')
-        # data = [(0, (0, 3)), (1, (1, 4)), (2, (1, 3)), (3, (2, 5))]
         # We are expecting the data to have the following format:
         #       [(job_class, (mean_task_class, mean_task_priority))]
         print(data)
@@ -127,7 +105,6 @@ class Utils(object):
         plt.savefig('../plots/q4/q4_mean_tasks_class.png')        
 
         # Display the graph on the screen
-        # plt.show()
         plt.clf()
         plt.cla()
         plt.close()
@@ -147,21 +124,15 @@ class Utils(object):
 
     def plot_q5(self):
         """
-        docstring
+        Plot visualization for Q5
         """
         data = self.load_object(5, 'evict_probab')
-        # data = [(0, 0.09947520490594965), (2, 0.023046092184368736), (9, 0.007751937984496124)]
 
         labels = [x[0] for x in data]
         y_evict_prob = [x[1] for x in data]
         
         plot = plt.bar(labels, y_evict_prob, width=0.5)
         
-        # Add the data value on head of the bar
-        # for value in plot:
-        #     height = value.get_height()
-        #     plt.text(value.get_x() + value.get_width()/2.,
-        #             1.002*height,'%.2f' % height, ha='center', va='bottom')
         plt.xticks(np.arange(min(labels), max(labels)+1, 1.0))
         # Add labels and title
         plt.xlabel("Task priority")
@@ -181,11 +152,12 @@ class Utils(object):
         # We are expecting the data to have the following format:
         #       [(j, (mean_task_class, mean_task_priority))]
 
-        data.remove((311226, 1))
-        data.remove((4, 1193))
         data.sort(key=lambda tup: tup[0])
 
-    
+        s = 0
+        for d in data:
+            s+= d[1]
+        print('s={}',format(s))
         # data = data[:15]
         print(data)
 
@@ -194,16 +166,7 @@ class Utils(object):
         
         plt.scatter(labels, y_evict_prob, color='red', s=13, alpha = 0.6)
 
-        # plot = plt.bar(labels, y_evict_prob, width=0.5)
-        
-        # # Add the data value on head of the bar
-        # for value in plot:
-        #     height = value.get_height()
-        #     plt.text(value.get_x() + value.get_width()/2.,
-        #             1.002*height,'', ha='center', va='bottom')
-        
-        # plt.xticks(np.arange(min(labels), max(labels)+1, 2.0))
-        # Add labels and title
+         # Add labels and title
         plt.xlabel("Machines")
         plt.ylabel("Jobs")
         plt.savefig('../plots/q6/q6_jobs_per_dif_machines.png')        
@@ -214,7 +177,7 @@ class Utils(object):
 
     def plot_q7(self):
         """
-        docstring
+        Plot visualization for Q7
         """
         data = self.load_object(7, 'req_and_used_mem')
 
@@ -231,11 +194,9 @@ class Utils(object):
 
     def plot_q8(self):
         """
-        docstring
+        Plot visualization for Q8
         """
         data = self.load_object(8, 'used_ram_per_prio')
-        # data = [(0, 0.004012073604694524), (1, 0.009458697604888057), (2, 0.009875916987298474), (8, 0.03020522469193485), (9, 0.049904689365639375), (10, 0.03469358183469384), (11, 0.026471382374860013)]
-
         data = data[:15]
         print(data)
 
@@ -260,12 +221,10 @@ class Utils(object):
 
     def plot_q9(self):
         """
-        docstring
+        Plot visualization for Q9
         """
         data_evict = self.load_object(9, 'evict_per_time_interv')
         data_ram = self.load_object(9, 'ram_per_time_interv')
-
-        # data = [(0, 0.004012073604694524), (1, 0.009458697604888057), (2, 0.009875916987298474), (8, 0.03020522469193485), (9, 0.049904689365639375), (10, 0.03469358183469384), (11, 0.026471382374860013)]
 
         x_labels = [x[0] for x in data_evict]
 
@@ -274,7 +233,6 @@ class Utils(object):
 
         plot = plt.plot(x_labels, y_evict, 'b')
         
-        # plt.xticks(np.arange(min(labels), max(labels)+1, 2.0))
         # Add labels and title
         plt.xlabel("Time")
         plt.ylabel("Evict tasks")
@@ -297,7 +255,7 @@ class Utils(object):
 
     def plot_q11(self):
         """
-        docstring
+        Plot visualization for Q11
         """
         data = self.load_object(11, 'cpu_ram_distribution')
         data.remove((('', ''), 32))
@@ -320,7 +278,3 @@ class Utils(object):
         plt.savefig('../plots/q11/q11_req_and_used_mem.png')        
 
         plt.show()
-
-
-# u = Utils()
-# u.plot_q5()

@@ -54,13 +54,6 @@ class Analyzer(object):
         self.sc = SparkContext(param_nb_threads, conf=sc_conf)
         self.sc.setLogLevel("ERROR")
 
-        # a = self.sc._conf.get('spark.executor.instances')
-        # print('nb executor instances = {}'.format(a))
-
-        # a = self.sc._conf.get('spark.executor.cores')
-        # print('spark.executor.cores = {}'.format(a))
-
-        # sys.exit()
         # self.utils.format_output_files()
 
         # Number of the current question
@@ -71,9 +64,6 @@ class Analyzer(object):
         # Read machine_events file
         file_rdd = self.sc.textFile(file_name)
         file_rdd = file_rdd.map(lambda x : x.split(','))
-
-        # Keep the RDD in memory
-        # file_rdd.cache()
 
         return file_rdd
 
@@ -103,7 +93,7 @@ class Analyzer(object):
         self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)
         self.utils.dump_in_file(distribution, self.nb_q)
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
-        # self.uncache(machine_ev)
+
 
     def question2(self):
         """
@@ -154,8 +144,6 @@ class Analyzer(object):
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
         self.utils.dump_in_file('Percentage time UP = {}'.format(sum_final/total), self.nb_q)
         self.utils.dump_in_file('Percentage time DOWN = {}'.format(1 - sum_final/total), self.nb_q)
-        
-        self.uncache(machine_ev)
 
         
     def question3(self):
@@ -179,15 +167,10 @@ class Analyzer(object):
             # From the task_events RDD, create pairs of job_ID and task_index for each entry
             task_pairs = task_events_RDD.map(lambda x: (int(x[task_ev_f['job_ID']]), int(x[task_ev_f['task_index']])))
             # Append the pairs(job_ID, task_index) from each file to the acumulator and remove duplicates
-            # acc = acc.union(task_pairs).distinct().collect()
             acc = acc.union(task_pairs)
-            # acc = set(acc)
-
-            # acc = self.sc.parallelize(acc)
 
             if (i + 2) % 100 == 0:
                 acc = acc.distinct().collect()
-
                 acc = self.sc.parallelize(acc)
 
         # Count how many tasks exist for each job
@@ -237,14 +220,7 @@ class Analyzer(object):
 
             if (i + 2) % 100 == 0:
                 acc_job = acc_job.distinct().collect()
-                # acc_job = set(acc_job)
-
                 acc_job = self.sc.parallelize(acc_job)
-
-            # self.uncache(job_events_RDD)
-
-        # # Sort the pairs in ascending order by the job_ID
-        # acc_job = acc_job.sortBy(lambda x: x[0])
 
         # Extracting the needed information from Task event table
         acc_tasks = self.sc.parallelize([])
@@ -263,9 +239,9 @@ class Analyzer(object):
             # Append the pairs(job_ID, task_index) from each file to the acumulator and remove duplicates
             acc_tasks = acc_tasks.union(task_pairs)
 
+            # Process a batch of 100 files
             if (i + 2) % 100 == 0:
                 acc_tasks = acc_tasks.distinct().collect()
-
                 acc_tasks = self.sc.parallelize(acc_tasks)
 
         # Create pairs of job_ID and scheduling_class,priority
@@ -307,10 +283,9 @@ class Analyzer(object):
         print('\nQuestion 5')
         self.nb_q = 5
 
-        # Accumulator for the information from all 500 task events files
+        # Accumulators for the information from all 500 task events files
         global_ev_prio_pairs_acc = self.sc.parallelize([])
         ev_prio_pairs_acc = self.sc.parallelize([])
-
         no_tasks_pairs_acc = self.sc.parallelize([])
 
         start = time.time()
@@ -322,11 +297,10 @@ class Analyzer(object):
             print('Processing file: {}'.format(file_name))
             task_events_RDD = self.read_file(file_name)
 
-            # From the task_events RDD, create tuples of: task_index, priority, and event_type
-            # job_pairs = task_events_RDD.map(lambda x: (int(x[task_ev_f['job_ID']]), int(x[task_ev_f['task_index']]), int(x[task_ev_f['priority']]), int(x[task_ev_f['event_type']])))
-
-            # Evicted events/priority
+            # From the task_events RDD, create tuples of: priority, and event_type
             ev_prio_pairs = task_events_RDD.map(lambda x: (int(x[task_ev_f['priority']]), int(x[task_ev_f['event_type']])))
+
+            # From the task_events RDD, create tuples of: priority, job_ID, task_index
             no_tasks_pairs = task_events_RDD.map(lambda x: (int(x[task_ev_f['priority']]), int(x[task_ev_f['job_ID']]), int(x[task_ev_f['task_index']])))
 
             # Concatenate the tuples of the current file to the accumulator
@@ -343,10 +317,7 @@ class Analyzer(object):
 
                 no_tasks_pairs_acc = no_tasks_pairs_acc.distinct().collect()
                 no_tasks_pairs_acc = self.sc.parallelize(no_tasks_pairs_acc)
-            # acc_tasks = set(acc_tasks)
-            # acc_tasks = self.sc.parallelize(acc_tasks)
-        # acc_tasks = acc_tasks.distinct().collect()
-        # no_tasks_pairs_acc = self.sc.parallelize(no_tasks_pairs_acc)
+
         global_ev_prio_pairs_acc = global_ev_prio_pairs_acc.reduceByKey(lambda x, y: x+y)
 
         no_tasks_pairs_acc = no_tasks_pairs_acc.map(lambda x: (x[0], 1)).reduceByKey(lambda x, y: x+y)
@@ -416,7 +387,6 @@ class Analyzer(object):
         weighted_average =  weighted_sum/sum_jobs
 
         end = time.time()
-
         self.utils.dump_in_file("Cloud results::", self.nb_q)
         self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
@@ -495,10 +465,7 @@ class Analyzer(object):
         # Remove the (job_id, task_index) tuples from the RDD
         req_and_used_mem = join_req_and_used_mem.map(lambda x: x[1]).collect()
 
-        print(req_and_used_mem[:5])
-
         end = time.time()
-
         self.utils.dump_in_file("Cloud results::", self.nb_q)
         self.utils.dump_in_file("Core_num: {}".format(CORE), self.nb_q)        
         self.utils.dump_in_file("Time: {}".format(end-start), self.nb_q)
@@ -527,10 +494,6 @@ class Analyzer(object):
             # From the task_events RDD, create pairs of job_ID, task_index and priority for each entry
             task_pairs = task_events_RDD.map(lambda x: ((int(x[task_ev_f['job_ID']]), int(x[task_ev_f['task_index']])), int(x[task_ev_f['priority']])))
 
-            # task_pairs = task_pairs.filter(lambda x: x[3] != '')
-
-            # task_pairs = task_pairs.filter(lambda x: x[2] == SCHEDULE).map(lambda x: ((x[0], x[1]), float(x[3])))
-
             acc_tasks = acc_tasks.union(task_pairs)
 
             if (i + 2) % int(PERCENTAGE) == 0:
@@ -539,8 +502,6 @@ class Analyzer(object):
 
         acc_tasks = acc_tasks.distinct().collect()
         acc_tasks = self.sc.parallelize(acc_tasks)
-
-        print('Processed task_events files')
 
         acc_task_usage = self.sc.parallelize([])
 
@@ -559,11 +520,6 @@ class Analyzer(object):
             if i % 5 == 0:
                 acc_task_usage = acc_task_usage.distinct().collect()                
                 acc_task_usage = self.sc.parallelize(acc_task_usage)
-
-        # acc_task_usage = acc_task_usage.collect()
-        # acc_task_usage = self.sc.parallelize(acc_task_usage)
-
-        print(' Finished task_usage for loop Q8')
 
         # Doing the summation of assigned_memory for each pairs (job_ID, task_index) as a key
         task_usage_sums = acc_task_usage.reduceByKey(lambda x, y: x + y)
@@ -624,18 +580,10 @@ class Analyzer(object):
 
             acc_tasks = acc_tasks.union(task_pairs)
 
-            # if (i + 2) % 100 == 0:
-            #     acc_tasks = acc_tasks.distinct().collect()
-
-            #     acc_tasks = self.sc.parallelize(acc_tasks)
-
-            # If Java heap error: do a collect between files(~100 files)
-
         # Counting the number of evicted tasks for each interval
         evict_ev_per_interval =  self.sc.parallelize(list(acc_tasks.countByKey().items())).collect()
 
         print(evict_ev_per_interval[:10])
-
 
         acc_task_usage = self.sc.parallelize([])
         for i in range(-1, int(NUM_FILES)):
@@ -662,9 +610,6 @@ class Analyzer(object):
         mem_sums_per_interval = acc_task_usage.reduceByKey(lambda x,y: x + y)
         # Sorting the pairs based on the interval index
         mem_sums_per_interval = mem_sums_per_interval.sortByKey().collect()
-
-        print(mem_sums_per_interval[:10])
-
         end = time.time()
 
         self.utils.dump_in_file("Cloud results::", self.nb_q)
