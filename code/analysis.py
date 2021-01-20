@@ -357,6 +357,14 @@ class Analyzer(object):
             # Since in the dataset there exist some tasks that don't have a machine_ID, we filter them out
             acc_tasks = acc_tasks.filter(lambda x: x[1] != '')
 
+
+            #For testing Lazy Evaluation
+            # acc_tasks = acc_tasks.filter(lambda x: x[1] != '').collect()
+            # acc_tasks = self.sc.parallelize(acc_tasks)
+            # acc_tasks = acc_tasks.union(acc_tasks).collect()
+     	    # acc_tasks = self.sc.parallelize(acc_tasks)
+
+
             acc_tasks = acc_tasks.union(acc_tasks)
 
             # Keep an unique occurrence of each entry(remove the duplicates)
@@ -406,6 +414,7 @@ class Analyzer(object):
 
         # Accumulator for the information from all 500 task events files
         acc_tasks = self.sc.parallelize([])
+        # acc_tasks.cache()
         start = time.time()
 
         for i in range(-1, int(NUM_FILES)):
@@ -447,7 +456,7 @@ class Analyzer(object):
             if i % 5 == 0:
                 acc_task_usage = acc_task_usage.distinct().collect()                
                 acc_task_usage = self.sc.parallelize(acc_task_usage)
-
+        # acc_task_usage.cache()
         # Do the summation for assigned_RAM
         task_usage_sums = acc_task_usage.reduceByKey(lambda x, y: x + y)
 
