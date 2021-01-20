@@ -39,18 +39,13 @@ class Analyzer(object):
         sc_conf = SparkConf()
 
         sc_conf.set('spark.executor.memory', MEMORY+'M')
-        # sc_conf.set('spark.executor.cores', '')
         sc_conf.set('spark.driver.memory', MEMORY+'M')
         sc_conf.set('spark.executor.instances', 4)
-        # sc_conf.set('spark.driver.cores', '')
         sc_conf.set('spark.driver.maxResultSize', MEMORY+'M')
         sc_conf.set('spark.sql.autoBroadcastJoinThreshol','-1')
-        # sc_conf.setMaster('local[*]')
 
         self.sc = SparkContext(param_nb_threads, conf=sc_conf)
         self.sc.setLogLevel("ERROR")
-
-        # self.utils.format_output_files()
 
         # Number of the current question
         self.nb_q = 1
@@ -357,8 +352,8 @@ class Analyzer(object):
             # Since in the dataset there exist some tasks that don't have a machine_ID, we filter them out
             acc_tasks = acc_tasks.filter(lambda x: x[1] != '')
 
-
-            #For testing Lazy Evaluation
+            # Normally we use lazy evaluation, but let's see what's the performance when we
+            # force the computation for some RDDs. 
             # acc_tasks = acc_tasks.filter(lambda x: x[1] != '').collect()
             # acc_tasks = self.sc.parallelize(acc_tasks)
             # acc_tasks = acc_tasks.union(acc_tasks).collect()
